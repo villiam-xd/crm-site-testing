@@ -29,7 +29,7 @@ app.MapGet("/", () => "Hello World!");
 app.MapPost("/api/login", (Delegate)Login);
 app.MapGet("/api/login", (Delegate)GetLogin);
 app.MapDelete("/api/login", (Delegate)Logout);
-app.MapPost("/api/users", (Delegate)CreateUser);
+app.MapPost("/api/users/admin", (Delegate)CreateAdmin);
 
 async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
 {
@@ -38,7 +38,7 @@ async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
         return Results.BadRequest(new { message = "Someone is already logged in."});
     }
     
-    await using var cmd = db.CreateCommand("SELECT * FROM users WHERE email = @email AND password = @password");
+    await using var cmd = db.CreateCommand("SELECT * FROM user_with_company WHERE email = @email AND password = @password");
     cmd.Parameters.AddWithValue("@email", loginRequest.Email);
     cmd.Parameters.AddWithValue("@password", loginRequest.Password);
 
@@ -51,7 +51,10 @@ async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
                 User user = new User(
                     reader.GetInt32(reader.GetOrdinal("id")),
                     reader.GetString(reader.GetOrdinal("username")),
-                    Enum.Parse<Role>(reader.GetString(reader.GetOrdinal("role")))
+                    Enum.Parse<Role>(reader.GetString(reader.GetOrdinal("role"))),
+                    reader.GetInt32(reader.GetOrdinal("company_id")),
+                    reader.GetString(reader.GetOrdinal("company_name"))
+                    
                     );
                 await Task.Run(() => context.Session.SetString("User", JsonSerializer.Serialize(user)));
                 return Results.Ok(new { username = user.Username, role = user.Role.ToString() });
@@ -69,7 +72,10 @@ async Task<IResult> GetLogin(HttpContext context)
         return Results.NotFound(new { message = "No one is logged in." });
     }
     var user = JsonSerializer.Deserialize<User>(key);
-    return Results.Ok(new { username = user?.Username, role = user?.Role.ToString() });
+    return Results.Ok(new { username = user?.Username, 
+        role = user?.Role.ToString(), 
+        company = user?.Company
+    });
 }
 
 async Task<IResult> Logout(HttpContext context)
@@ -83,31 +89,49 @@ async Task<IResult> Logout(HttpContext context)
     return Results.Ok(new { message = "Session cleared" });
 }
 
-async Task<IResult> CreateUser(RegisterRequest registerRequest)
+async Task<IResult> CreateAdmin(RegisterRequest registerRequest)
 {
+    await using var cmd = db.CreateCommand("INSERT INTO companys (name) VALUES (@company) RETURNING id, name;");
+    cmd.Parameters.AddWithValue("@company", registerRequest.Company);
+    
     try
     {
-
-        await using var cmd =
-            db.CreateCommand(
-                "INSERT INTO users (username, password, role, email) VALUES (@username, @password, 'ADMIN', @email);");
-        cmd.Parameters.AddWithValue("@username", registerRequest.Username);
-        cmd.Parameters.AddWithValue("@email", registerRequest.Email);
-        cmd.Parameters.AddWithValue("@password", registerRequest.Password);
-
         await using (var reader = await cmd.ExecuteReaderAsync())
         {
-            Console.WriteLine(reader.RecordsAffected);
-            if (reader.RecordsAffected == 1)
+            if (await reader.ReadAsync())
             {
-                return Results.Ok(new { message = "User registered." });
+                await using var cmd2 = db.CreateCommand("INSERT INTO users (username, password, role, email, company) VALUES (@username, @password, 'ADMIN', @email, @company_id);");
+                cmd2.Parameters.AddWithValue("@username", registerRequest.Username);
+                cmd2.Parameters.AddWithValue("@email", registerRequest.Email);
+                cmd2.Parameters.AddWithValue("@password", registerRequest.Password);
+                cmd2.Parameters.AddWithValue("@company_id", reader.GetInt32(reader.GetOrdinal("id")));
+                
+                try
+                {
+                    await using (var reader2 = await cmd2.ExecuteReaderAsync())
+                    {
+                        if (reader2.RecordsAffected == 1)
+                        {
+                            return Results.Ok(new { message = "User registered." });
+                        }
+                    }
+                }
+                catch
+                {
+                    await using var cmd3 = db.CreateCommand("DELETE FROM companys WHERE name = @company;");
+                    cmd3.Parameters.AddWithValue("@company", registerRequest.Company);
+                    await cmd3.ExecuteNonQueryAsync();
+                    
+                    return Results.Conflict(new { message = "User already exists." });
+                }
             }
         }
     }
     catch
     {
-        return Results.Conflict(new { message = "User already exists." });
+        return Results.Conflict(new { message = "Company already exists." });
     }
+    
     return Results.Problem("Something went wrong.", statusCode: 500);
 }
 
