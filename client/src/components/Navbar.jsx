@@ -1,7 +1,34 @@
+import { useContext } from "react";
 import { NavLink } from "react-router";
+import { GlobalContext } from "../GlobalContext.jsx";
 
 export default function Navbar() {
+    const { user, setUser } = useContext(GlobalContext)
+
+    async function logout() {
+        const response = await fetch("/api/login", {
+            method: "delete",
+            credentials: "include"
+        })
+        const result = await response.json()
+
+        if (response.ok) {
+            setUser(null)
+        } else {
+            alert(`Status: ${response.status}\n${result.message}`)
+        }
+    }
+
     return <nav>
         <NavLink to={"/"}>Home</NavLink>
+        {
+            user == null ?
+                <>
+                    <NavLink to={"/register"}>Register</NavLink>
+                    <NavLink to={"/login"}>Login</NavLink>
+                </>
+                :
+                <button onClick={logout}>Logout</button>
+        }
     </nav>
 }

@@ -1,6 +1,8 @@
-import { BrowserRouter, Route } from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router";
 import Layout from "./Layout.jsx";
-import Home from "./pages/Home";
+import Home from "./pages/Home.jsx";
+import Register from "./pages/Register.jsx";
+import Login from "./pages/Login.jsx";
 
 export default function App() {
   return <>
@@ -8,8 +10,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />} >
           <Route index element={<Home />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
         </Route>
       </Routes>
     </BrowserRouter>
-    </>
+  </>
 }
