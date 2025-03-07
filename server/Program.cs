@@ -30,6 +30,7 @@ app.MapPost("/api/login", (Delegate)Login);
 app.MapGet("/api/login", (Delegate)GetLogin);
 app.MapDelete("/api/login", (Delegate)Logout);
 app.MapPost("/api/users/admin", (Delegate)CreateAdmin);
+app.MapGet("/api/users/bycompany/{company}", (Delegate)GetEmployesByCompany);
 
 async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
 {
@@ -49,15 +50,19 @@ async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
             while (await reader.ReadAsync())
             {
                 User user = new User(
-                    reader.GetInt32(reader.GetOrdinal("id")),
+                    reader.GetInt32(reader.GetOrdinal("user_id")),
                     reader.GetString(reader.GetOrdinal("username")),
                     Enum.Parse<Role>(reader.GetString(reader.GetOrdinal("role"))),
                     reader.GetInt32(reader.GetOrdinal("company_id")),
                     reader.GetString(reader.GetOrdinal("company_name"))
-                    
                     );
                 await Task.Run(() => context.Session.SetString("User", JsonSerializer.Serialize(user)));
-                return Results.Ok(new { username = user.Username, role = user.Role.ToString() });
+                return Results.Ok(new
+                {
+                    username = user.Username, 
+                    role = user.Role.ToString(),
+                    company = user.Company
+                });
             }
         }
     }
@@ -133,6 +138,30 @@ async Task<IResult> CreateAdmin(RegisterRequest registerRequest)
     }
     
     return Results.Problem("Something went wrong.", statusCode: 500);
+}
+
+async Task<IResult> GetEmployesByCompany(string company)
+{
+    List<Employe> employes = new List<Employe>();
+    await using var cmd = db.CreateCommand("SELECT * FROM user_with_company WHERE company = @company");
+    cmd.Parameters.AddWithValue("@company", company);
+
+    await using (var reader = await cmd.ExecuteReaderAsync())
+    {
+        if (reader.HasRows)
+        {
+            while (await reader.ReadAsync())
+            {
+                employes.Add(new Employe(
+                    reader.GetInt32(reader.GetOrdinal("user_id")),
+                    reader.GetString(reader.GetOrdinal("username")),
+                    Enum.Parse<Role>(reader.GetString(reader.GetOrdinal("role")))
+                ));
+            } 
+            return Results.Ok(employes);    
+        }
+    }
+    return Results.NoContent();
 }
 
 await app.RunAsync();

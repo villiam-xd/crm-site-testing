@@ -6,7 +6,7 @@ function GlobalProvider({ children }) {
     const [user, setUser] = useState(null)
 
     async function getLogin() {
-        const response = await fetch("/api/login", { credentials: 'include' })
+        const response = await fetch("/api/login", { credentials: "include" })
         const result = await response.json()
 
         if (response.ok) {
