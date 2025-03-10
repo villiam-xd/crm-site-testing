@@ -1,31 +1,29 @@
 import { useContext, useEffect, useState } from "react"
 import { GlobalContext } from "../../GlobalContext.jsx"
+import EmployeeList from "../../components/EmployeeList.jsx"
 
-export default function EmployeView() {
-    const [employes, setEmployes] = useState([])
+export default function EmployeeView() {
+    const [employees, setEmployees] = useState([])
     const { user } = useContext(GlobalContext)
 
-    async function getEmployes() {
+    async function getEmployees() {
         const response = await fetch(`/api/users/bycompany/${user.company}`, { credentials: "include" })
         const result = await response.json()
 
         if (response.ok) {
-            setEmployes(result)
+            console.log(result)
+            setEmployees(result.employees)
         } else {
             alert("No employes found.")
         }
     }
 
     useEffect(() => {
-        getEmployes()
-    }, [])
+        getEmployees()
+    }, [user])
 
-    return <>
-        <h1>Employes</h1>
-        {
-            employes.map(employe => {
-                <p key={employe.id}>{employe.username}</p>
-            })
-        }
-    </>
+    return <div className="EmployeeView">
+        <h1>Employees</h1>
+        <EmployeeList employeeList={employees} />
+    </div>
 }

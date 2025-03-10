@@ -3,7 +3,7 @@ import Layout from "./Layout.jsx";
 import Home from "./pages/Home.jsx";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
-import EmployeView from "./pages/admin/EmployeView.jsx";
+import EmployeeView from "./pages/admin/EmployeeView.jsx";
 
 export default function App() {
   return <>
@@ -13,7 +13,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin/employes" element={<EmployeView />} />
+          <Route path="/admin/employees" element={<EmployeeView />} />
         </Route>
       </Routes>
     </BrowserRouter>

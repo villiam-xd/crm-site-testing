@@ -30,7 +30,7 @@ app.MapPost("/api/login", (Delegate)Login);
 app.MapGet("/api/login", (Delegate)GetLogin);
 app.MapDelete("/api/login", (Delegate)Logout);
 app.MapPost("/api/users/admin", (Delegate)CreateAdmin);
-app.MapGet("/api/users/bycompany/{company}", (Delegate)GetEmployesByCompany);
+app.MapGet("/api/users/bycompany/{company}", (Delegate)GetEmployeesByCompany);
 
 async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
 {
@@ -140,10 +140,10 @@ async Task<IResult> CreateAdmin(RegisterRequest registerRequest)
     return Results.Problem("Something went wrong.", statusCode: 500);
 }
 
-async Task<IResult> GetEmployesByCompany(string company)
+async Task<IResult> GetEmployeesByCompany(string company)
 {
-    List<Employe> employes = new List<Employe>();
-    await using var cmd = db.CreateCommand("SELECT * FROM user_with_company WHERE company = @company");
+    List<Employee> employeesList = new List<Employee>();
+    await using var cmd = db.CreateCommand("SELECT * FROM user_with_company WHERE company_name = @company");
     cmd.Parameters.AddWithValue("@company", company);
 
     await using (var reader = await cmd.ExecuteReaderAsync())
@@ -152,13 +152,13 @@ async Task<IResult> GetEmployesByCompany(string company)
         {
             while (await reader.ReadAsync())
             {
-                employes.Add(new Employe(
+                employeesList.Add(new Employee(
                     reader.GetInt32(reader.GetOrdinal("user_id")),
                     reader.GetString(reader.GetOrdinal("username")),
                     Enum.Parse<Role>(reader.GetString(reader.GetOrdinal("role")))
                 ));
             } 
-            return Results.Ok(employes);    
+            return Results.Ok(new { employees = employeesList });    
         }
     }
     return Results.NoContent();
