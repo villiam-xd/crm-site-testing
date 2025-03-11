@@ -29,7 +29,7 @@ app.MapDelete("/api/login", (Delegate)Logout);
 app.MapPost("/api/users/admin", (Delegate)CreateAdmin);
 app.MapPost("/api/users/create", (Delegate)CreateEmployee);
 app.MapGet("/api/users/bycompany/{company}", (Delegate)GetEmployeesByCompany);
-// app.MapPut("/api/users/{user_id})", (Delegate)UpdateUser);
+app.MapPut("/api/users/{userId}", (Delegate)UpdateUser);
 
 async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
 {
@@ -221,6 +221,52 @@ async Task<IResult> CreateEmployee(HttpContext context, CreateEmployeeRequest cr
     catch
     {
         return Results.NotFound(new { message = "Company not found." });
+    }
+    
+    return Results.Problem("Something went wrong.", statusCode: 500);
+}
+
+async Task<IResult> UpdateUser(int userId, HttpContext context, UpdateUserRequest updateUserRequest)
+{
+    Console.WriteLine("Updating user...");
+    Console.WriteLine(userId);
+    if (context.Session.GetString("User") == null)
+    {
+        return Results.Unauthorized();
+    }
+    
+    var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+    if (user.Role != Role.ADMIN)
+    {
+        if (user.Id != userId)
+        {        
+            Results.Conflict(new { message = "You dont have access to this" });
+        }
+    }
+
+    await using var cmd = db.CreateCommand("UPDATE users SET firstname = @firstname, lastname = @lastname, email = @email, role = @role::role WHERE id = @user_id");
+    cmd.Parameters.AddWithValue("@firstname", updateUserRequest.Firstname);
+    cmd.Parameters.AddWithValue("@lastname", updateUserRequest.Lastname);
+    cmd.Parameters.AddWithValue("@email", updateUserRequest.Email);
+    cmd.Parameters.AddWithValue("@role", Enum.Parse<Role>(updateUserRequest.Role).ToString());
+    cmd.Parameters.AddWithValue("@user_id", userId);
+
+    try
+    {
+        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+        if (rowsAffected == 1)
+        {
+            return Results.Ok(new { message = "User updated successfully." });
+        }
+        else
+        {
+            return Results.Conflict(new { message = "Query executed but something went wrong." });
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+        return Results.Conflict(new { message = "User update failed." });
     }
     
     return Results.Problem("Something went wrong.", statusCode: 500);
