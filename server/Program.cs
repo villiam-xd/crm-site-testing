@@ -30,6 +30,7 @@ app.MapPost("/api/login", (Delegate)Login);
 app.MapGet("/api/login", (Delegate)GetLogin);
 app.MapDelete("/api/login", (Delegate)Logout);
 app.MapPost("/api/users/admin", (Delegate)CreateAdmin);
+app.MapPost("/api/users/create", (Delegate)CreateEmployee);
 app.MapGet("/api/users/bycompany/{company}", (Delegate)GetEmployeesByCompany);
 
 async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
@@ -162,6 +163,66 @@ async Task<IResult> GetEmployeesByCompany(string company)
         }
     }
     return Results.NoContent();
+}
+
+async Task<IResult> CreateEmployee(HttpContext context, CreateEmployeeRequest createEmployeeRequest)
+{
+    
+    if (context.Session.GetString("User") == null)
+    {
+        return Results.Unauthorized();
+    }
+    
+    var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+    if (user.Role != Role.ADMIN)
+    {
+        Results.Conflict(new { message = "You dont have access to this" });
+    }
+    
+    await using var cmd = db.CreateCommand("SELECT * FROM companys WHERE name = @company");
+    cmd.Parameters.AddWithValue("@company", user.Company);
+    
+    try
+    {
+        await using (var reader = await cmd.ExecuteReaderAsync())
+        {
+            if (await reader.ReadAsync())
+            {
+                await using var cmd2 = db.CreateCommand("INSERT INTO users (firstname, lastname, username, password, role, email, company) VALUES (@firstname, @lastname, @username, @password, @role::role, @email, @company_id);");
+                cmd2.Parameters.AddWithValue("@firstname", createEmployeeRequest.Firstname);
+                cmd2.Parameters.AddWithValue("@lastname", createEmployeeRequest.Lastname);
+                cmd2.Parameters.AddWithValue("@username", createEmployeeRequest.Firstname + "_" + createEmployeeRequest.Lastname);
+                cmd2.Parameters.AddWithValue("@password", createEmployeeRequest.Password);
+                cmd2.Parameters.AddWithValue("@role", Enum.Parse<Role>(createEmployeeRequest.Role).ToString());
+                cmd2.Parameters.AddWithValue("@email", createEmployeeRequest.Email);
+                cmd2.Parameters.AddWithValue("@company_id", reader.GetInt32(reader.GetOrdinal("id")));
+                
+                try
+                {
+                    int rowsAffected = await cmd2.ExecuteNonQueryAsync();
+                    if (rowsAffected == 1)
+                    {
+                        return Results.Ok(new { message = "User registered." });
+                    }
+                    else
+                    {
+                        return Results.Conflict(new { message = "Query executed but something went wrong." });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    return Results.Conflict(new { message = "User already exists" });
+                }
+            }
+        }
+    }
+    catch
+    {
+        return Results.NotFound(new { message = "Company not found." });
+    }
+    
+    return Results.Problem("Something went wrong.", statusCode: 500);
 }
 
 await app.RunAsync();
