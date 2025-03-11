@@ -24,7 +24,9 @@ export default function EmployeeView() {
 
     return <div className="EmployeeView">
         <h1>Employees</h1>
-        <NavLink to="new"><button>Add Employee</button></NavLink>
+        <div id="employeeViewMenu">
+            <NavLink to="new"><button>Add Employee</button></NavLink>
+        </div>
         <EmployeeList employeeList={employees} />
     </div>
 }

@@ -132,6 +132,13 @@ a:hover {
   background-color: #1d1d1d;
 }
 
+#employeeViewMenu {
+  width: 95%;
+  margin: 20px 0;
+  padding: 0 30px;
+  display: flex;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
