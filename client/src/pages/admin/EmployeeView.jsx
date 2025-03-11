@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react"
+import { NavLink } from "react-router"
 import { GlobalContext } from "../../GlobalContext.jsx"
 import EmployeeList from "../../components/EmployeeList.jsx"
-import { NavLink } from "react-router"
 
 export default function EmployeeView() {
     const [employees, setEmployees] = useState([])
@@ -12,7 +12,6 @@ export default function EmployeeView() {
         const result = await response.json()
 
         if (response.ok) {
-            console.log(result)
             setEmployees(result.employees)
         } else {
             alert("No employes found.")
