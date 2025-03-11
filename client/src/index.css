@@ -104,21 +104,36 @@ a:hover {
 }
 
 .employeeCard {
-  display: flex;
-  gap: 10px;
+  
   border: #ffffffde;
   border-style: solid solid none ;
 
-  p {
-    margin: 10px 0;
-    flex-basis: 50%;
-    padding: 0 10px;
-    border: #ffffffde;
-    border-right-style: solid;
+  .employeeAttributes{
+    display: flex;
+    gap: 10px;
+
+    p {
+      margin: 10px 0;
+      flex-basis: 50%;
+      padding: 0 10px;
+      border: #ffffffde;
+      border-right-style: solid;
+    }
+    
+    p:last-child {
+      border-right-style: none;
+    }
   }
 
-  p:last-child {
-    border-right-style: none;
+  .employeeMenu {
+    padding: 10px;
+  }
+}
+
+.employeeCard:hover {
+  .employeeAttributes {
+    background-color: #1d1d1d;
+    cursor: pointer;
   }
 }
 
@@ -126,10 +141,28 @@ a:hover {
   border-style: solid;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
+
+  .employeeAttributes:hover {
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+  }
+
+  .isActive:hover {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
 }
 
-.employeeCard:hover {
-  background-color: #1d1d1d;
+.editForm {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px;
+
+  input, select, button {
+    width: 20%;
+  }
 }
 
 #employeeViewMenu {
