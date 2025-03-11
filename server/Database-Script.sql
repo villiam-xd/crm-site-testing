@@ -17,18 +17,20 @@ alter table companys
 
 create table users
 (
-    id       serial
+    id        serial
         constraint users_pk
             primary key,
-    username varchar
+    firstname varchar,
+    lastname  varchar,
+    username  varchar
         constraint users_pk_2
             unique,
-    password varchar,
-    role     role,
-    email    varchar
+    password  varchar,
+    role      role,
+    email     varchar
         constraint users_pk_3
             unique,
-    company  integer not null
+    company   integer not null
         constraint users_companys_id_fk
             references companys
 );
@@ -50,9 +52,9 @@ FROM users u
 alter table user_with_company
     owner to postgres;
 
-INSERT INTO public.companys (id, name) VALUES (1, 'Demo AB');
-INSERT INTO public.companys (id, name) VALUES (24, 'Test AB');
+INSERT INTO public.companys (name) VALUES ('Demo AB');
+INSERT INTO public.companys (name) VALUES ('Test AB');
 
-INSERT INTO public.users (username, password, role, email, company) VALUES ( 'Master', 'abc123', 'ADMIN', 'm@email.com', 1);
-INSERT INTO public.users (username, password, role, email, company) VALUES ( 'no92one', 'abc123', 'USER', 'no@email.com', 1);
-INSERT INTO public.users (username, password, role, email, company) VALUES ( 'Testare', 'abc123', 'ADMIN', 'test@gmail.com', 24);
+INSERT INTO public.users (firstname, lastname, username, password, role, email, company) VALUES ( 'Admin', 'Adminsson','Master', 'abc123', 'ADMIN', 'm@email.com', 1);
+INSERT INTO public.users (firstname, lastname, username, password, role, email, company) VALUES ( 'Linus', 'Lindroth','no92one', 'abc123', 'USER', 'no@email.com', 1);
+INSERT INTO public.users (firstname, lastname, username, password, role, email, company) VALUES ( 'Testaren', 'Testsson','Testare', 'abc123', 'ADMIN', 'test@gmail.com', 2);
