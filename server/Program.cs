@@ -22,16 +22,14 @@ var app = builder.Build();
 
 app.UseSession();
 
-
-
-app.MapGet("/", () => "Hello World!");
-
+app.MapGet("/", () => "Server is running!");
 app.MapPost("/api/login", (Delegate)Login);
 app.MapGet("/api/login", (Delegate)GetLogin);
 app.MapDelete("/api/login", (Delegate)Logout);
 app.MapPost("/api/users/admin", (Delegate)CreateAdmin);
 app.MapPost("/api/users/create", (Delegate)CreateEmployee);
 app.MapGet("/api/users/bycompany/{company}", (Delegate)GetEmployeesByCompany);
+// app.MapPut("/api/users/{user_id})", (Delegate)UpdateUser);
 
 async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
 {
@@ -40,7 +38,7 @@ async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
         return Results.BadRequest(new { message = "Someone is already logged in."});
     }
     
-    await using var cmd = db.CreateCommand("SELECT * FROM user_with_company WHERE email = @email AND password = @password");
+    await using var cmd = db.CreateCommand("SELECT * FROM users_with_company WHERE email = @email AND password = @password");
     cmd.Parameters.AddWithValue("@email", loginRequest.Email);
     cmd.Parameters.AddWithValue("@password", loginRequest.Password);
 
