@@ -144,7 +144,7 @@ async Task<IResult> CreateAdmin(RegisterRequest registerRequest)
 async Task<IResult> GetEmployeesByCompany(string company)
 {
     List<Employee> employeesList = new List<Employee>();
-    await using var cmd = db.CreateCommand("SELECT * FROM user_with_company WHERE company_name = @company");
+    await using var cmd = db.CreateCommand("SELECT * FROM users_with_company WHERE company_name = @company");
     cmd.Parameters.AddWithValue("@company", company);
 
     await using (var reader = await cmd.ExecuteReaderAsync())
@@ -156,6 +156,9 @@ async Task<IResult> GetEmployeesByCompany(string company)
                 employeesList.Add(new Employee(
                     reader.GetInt32(reader.GetOrdinal("user_id")),
                     reader.GetString(reader.GetOrdinal("username")),
+                    reader.GetString(reader.GetOrdinal("firstname")),
+                    reader.GetString(reader.GetOrdinal("lastname")),
+                    reader.GetString(reader.GetOrdinal("email")),
                     Enum.Parse<Role>(reader.GetString(reader.GetOrdinal("role")))
                 ));
             } 
