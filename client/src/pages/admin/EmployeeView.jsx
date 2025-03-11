@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import { GlobalContext } from "../../GlobalContext.jsx"
 import EmployeeList from "../../components/EmployeeList.jsx"
+import { NavLink } from "react-router"
 
 export default function EmployeeView() {
     const [employees, setEmployees] = useState([])
@@ -24,6 +25,7 @@ export default function EmployeeView() {
 
     return <div className="EmployeeView">
         <h1>Employees</h1>
+        <NavLink to="new"><button>Add Employee</button></NavLink>
         <EmployeeList employeeList={employees} />
     </div>
 }
