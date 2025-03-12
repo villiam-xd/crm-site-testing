@@ -228,8 +228,6 @@ async Task<IResult> CreateEmployee(HttpContext context, CreateEmployeeRequest cr
 
 async Task<IResult> UpdateUser(int userId, HttpContext context, UpdateUserRequest updateUserRequest)
 {
-    Console.WriteLine("Updating user...");
-    Console.WriteLine(userId);
     if (context.Session.GetString("User") == null)
     {
         return Results.Unauthorized();
@@ -268,9 +266,6 @@ async Task<IResult> UpdateUser(int userId, HttpContext context, UpdateUserReques
         Console.WriteLine(ex.Message);
         return Results.Conflict(new { message = "User update failed." });
     }
-    
-    return Results.Problem("Something went wrong.", statusCode: 500);
 }
 
 await app.RunAsync();
-
