@@ -3,7 +3,7 @@ export default function NewEmployee() {
     async function addEmployee(formdata) {
         const response = await fetch(`/api/users/create`, {
             method: "post",
-            credentials: 'include',
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 firstname: formdata.get("firstname"),

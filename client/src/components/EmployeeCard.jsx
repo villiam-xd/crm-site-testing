@@ -1,8 +1,9 @@
 import { useState } from "react"
 
-export default function EmployeeCard({ employee }) {
+export default function EmployeeCard({ employee, getEmployees }) {
     const [hide, setHide] = useState(false)
     const [editForm, setEditForm] = useState(false)
+    const [roleValue, setRoleValue] = useState(employee.role)
 
     function toggleMenus() {
         if (hide) {
@@ -11,21 +12,22 @@ export default function EmployeeCard({ employee }) {
         setHide(!hide)
     }
 
-    async function updateEmployee(formdata) {
+    async function updateEmployee(formData) {
         const response = await fetch(`/api/users/${employee.id}`, {
             method: "put",
             headers: { "Content-Type": "application/json" },
-            credentials: "included",
+            credentials: "include",
             body: JSON.stringify({
-                firstname: formdata("firstname"),
-                lastname: formdata("lastname"),
-                email: formdata("email"),
-                role: formdata("role"),
+                firstname: formData.get("firstname").length > 0 ? formData.get("firstname") : employee.firstname,
+                lastname: formData.get("lastname").length > 0 ? formData.get("lastname") : employee.lastname,
+                email: formData.get("email").length > 0 ? formData.get("email") : employee.email,
+                role: roleValue
             })
         })
 
         if (response.ok) {
             alert("Good")
+            getEmployees()
         } else {
             alert("Bad")
         }
@@ -41,11 +43,11 @@ export default function EmployeeCard({ employee }) {
         </div>
         {
             editForm ?
-                <form action={updateEmployee} className="editForm">
+                <form action={updateEmployee} className="editEmployeeForm">
                     <input type="text" name="firstname" placeholder="New Firstname" />
                     <input type="text" name="lastname" placeholder="New Lastname" />
                     <input type="email" name="email" placeholder="New Email" />
-                    <select defaultValue={employee.role}>
+                    <select defaultValue={employee.role} onChange={e => setRoleValue(e.target.value)}>
                         <option value="USER">USER</option>
                         <option value="ADMIN">ADMIN</option>
                     </select>

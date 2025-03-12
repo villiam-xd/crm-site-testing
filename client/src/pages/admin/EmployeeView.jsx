@@ -22,11 +22,11 @@ export default function EmployeeView() {
         getEmployees()
     }, [user])
 
-    return <div className="EmployeeView">
+    return <div className="employeeView">
         <h1>Employees</h1>
         <div id="employeeViewMenu">
             <NavLink to="new"><button>Add Employee</button></NavLink>
         </div>
-        <EmployeeList employeeList={employees} />
+        <EmployeeList employeeList={employees} getEmployees={getEmployees} />
     </div>
 }

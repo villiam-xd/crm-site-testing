@@ -1,6 +1,6 @@
 import EmployeeCard from "./EmployeeCard.jsx";
 
-export default function EmployeeList({ employeeList }) {
+export default function EmployeeList({ employeeList, getEmployees }) {
     return <div className="list">
         <div className="employeeListHeaders">
             <p>Firstname</p>
@@ -9,6 +9,6 @@ export default function EmployeeList({ employeeList }) {
             <p>ROLE</p>
             <p>Username</p>
         </div>
-        {employeeList.map(employee => <EmployeeCard key={employee.id} employee={employee} />)}
+        {employeeList.map(employee => <EmployeeCard key={employee.id} employee={employee} getEmployees={getEmployees} />)}
     </div>
 }
