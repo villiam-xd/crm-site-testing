@@ -33,6 +33,21 @@ export default function EmployeeCard({ employee, getEmployees }) {
         }
     }
 
+    async function removeEmployee() {
+        const response = await fetch(`/api/users/${employee.id}`, {
+            method: "delete",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+        })
+
+        if (response.ok) {
+            alert("Employee has been removed.")
+            getEmployees()
+        } else {
+            alert("Bad")
+        }
+    }
+
     return <div className="employeeCard">
         <div className={"employeeAttributes" + (hide ? " isActive" : "")} onClick={toggleMenus}>
             <p>{employee.firstname}</p>
@@ -60,6 +75,7 @@ export default function EmployeeCard({ employee, getEmployees }) {
             hide ?
                 <div className="employeeMenu">
                     <button onClick={() => setEditForm(!editForm)}>Edit information</button>
+                    <button className="removeButton" onClick={removeEmployee}>Remove employee</button>
                 </div>
                 :
                 null

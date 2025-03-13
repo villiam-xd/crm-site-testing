@@ -6,6 +6,7 @@
   color-scheme: light dark;
   color: #ffffffde;
   background-color: #242424;
+  border-color: #ffffffde;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -86,7 +87,6 @@ a:hover {
   background-color: #1d1d1d;
   display: flex;
   gap: 10px;
-  border: #ffffffde;
   border-style: solid solid none ;
 
   p {
@@ -95,7 +95,6 @@ a:hover {
     font-size: larger;
     font-weight: bolder;
     padding: 20px 10px;
-    border: #ffffffde;
     border-right-style: solid;
   }
 
@@ -105,8 +104,6 @@ a:hover {
 }
 
 .employeeCard {
-  
-  border: #ffffffde;
   border-style: solid solid none ;
 
   .employeeAttributes{
@@ -117,7 +114,6 @@ a:hover {
       margin: 10px 0;
       width: 20%;
       padding: 0 10px;
-      border: #ffffffde;
       border-right-style: solid;
       white-space: nowrap;
       overflow: hidden; 
@@ -131,6 +127,8 @@ a:hover {
 
   .employeeMenu {
     padding: 10px;
+    display:flex;
+    justify-content: space-between;
   }
 }
 
@@ -201,14 +199,25 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+.removeButton {
+  background-color: darkred;
+}
+
+.removeButton:hover {
+  border-color: #ffffffde;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
+    border-color: #213547;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
