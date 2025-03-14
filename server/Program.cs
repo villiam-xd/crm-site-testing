@@ -30,6 +30,8 @@ app.MapPost("/api/users/admin", (Delegate)CreateAdmin);
 app.MapPost("/api/users/create", (Delegate)CreateEmployee);
 app.MapGet("/api/users/bycompany/{company}", (Delegate)GetEmployeesByCompany);
 app.MapPut("/api/users/{userId}", (Delegate)UpdateUser);
+app.MapDelete("/api/users/{userId}", (Delegate)DeleteUser);
+app.MapPost("/api/issue/create/{companyId}", (Delegate)CreateIssue);
 
 async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
 {
@@ -266,6 +268,87 @@ async Task<IResult> UpdateUser(int userId, HttpContext context, UpdateUserReques
         Console.WriteLine(ex.Message);
         return Results.Conflict(new { message = "User update failed." });
     }
+}
+
+async Task<IResult> DeleteUser(int userId, HttpContext context)
+{
+    if (context.Session.GetString("User") == null)
+    {
+        return Results.Unauthorized();
+    }
+    
+    var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+    if (user.Role != Role.ADMIN)
+    {
+        Results.Conflict(new { message = "You dont have access to this" });
+    }
+    
+    await using var cmd = db.CreateCommand("DELETE FROM users WHERE id = @user_id");
+    cmd.Parameters.AddWithValue("@user_id", userId);
+    
+    try
+    {
+        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+        if (rowsAffected == 1)
+        {
+            return Results.Ok(new { message = "User was deleted successfully." });
+        }
+        else if (rowsAffected == 0)
+        {
+            return Results.NotFound(new { message = "No user was found." });
+        }
+        else
+        {
+            return Results.Conflict(new { message = "Query executed but something went wrong." });
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+        return Results.Conflict(new { message = "Query was not executed." });
+    }
+}
+
+async Task<IResult> CreateIssue(int companyId, CreateIssueRequest createIssueRequest)
+{
+    await using var cmd = db.CreateCommand("INSERT INTO issues (company_id, customer_email, title, subject, state) VALUES (@company_id, @customer_email, @title, @subject, 'NEW') RETURNING id;");
+    cmd.Parameters.AddWithValue("@company_id", companyId);
+    cmd.Parameters.AddWithValue("@customer_email", createIssueRequest.Email);
+    cmd.Parameters.AddWithValue("@title", createIssueRequest.Title);
+    cmd.Parameters.AddWithValue("@subject", createIssueRequest.Subject);
+
+    await using (var reader = await cmd.ExecuteReaderAsync())
+    {
+        if (await reader.ReadAsync())
+        {
+            await using var cmd2 = db.CreateCommand("INSERT INTO messages (issue_id, message, sender) VALUES (@issue_id, @message, 'CUSTOMER');");
+            cmd2.Parameters.AddWithValue("@issue_id", reader.GetInt32(reader.GetOrdinal("id")));
+            cmd2.Parameters.AddWithValue("@message", createIssueRequest.Message);
+                
+            try
+            {
+                int rowsAffected = await cmd2.ExecuteNonQueryAsync();
+                if (rowsAffected == 1)
+                {
+                    return Results.Ok(new { message = "Issue was created successfully." });
+                }
+                else
+                {
+                    return Results.Conflict(new { message = "Query executed but something went wrong." });
+                }
+            }
+            catch
+            {
+                await using var cmd3 = db.CreateCommand("DELETE FROM issues WHERE id = @issue_id;");
+                cmd3.Parameters.AddWithValue("@issue_id", reader.GetInt32(reader.GetOrdinal("id")));
+                await cmd3.ExecuteNonQueryAsync();
+                    
+                return Results.Conflict(new { message = "Issue was created, but something went wrong during the process, so the issue has been deleted." });
+            }
+        }
+    }
+    
+    return Results.Problem("Something went wrong.", statusCode: 500);
 }
 
 await app.RunAsync();
