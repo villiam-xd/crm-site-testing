@@ -28,7 +28,7 @@ app.MapGet("/api/login", (Delegate)GetLogin);
 app.MapDelete("/api/login", (Delegate)Logout);
 app.MapPost("/api/users/admin", (Delegate)CreateAdmin);
 app.MapPost("/api/users/create", (Delegate)CreateEmployee);
-app.MapGet("/api/users/bycompany/{company}", (Delegate)GetEmployeesByCompany);
+app.MapGet("/api/users/bycompany/{companyName}", (Delegate)GetEmployeesByCompany);
 app.MapPut("/api/users/{userId}", (Delegate)UpdateUser);
 app.MapDelete("/api/users/{userId}", (Delegate)DeleteUser);
 app.MapPost("/api/issue/create/{companyId}", (Delegate)CreateIssue);
@@ -141,11 +141,11 @@ async Task<IResult> CreateAdmin(RegisterRequest registerRequest)
     return Results.Problem("Something went wrong.", statusCode: 500);
 }
 
-async Task<IResult> GetEmployeesByCompany(string company)
+async Task<IResult> GetEmployeesByCompany(string companyName)
 {
     List<Employee> employeesList = new List<Employee>();
-    await using var cmd = db.CreateCommand("SELECT * FROM users_with_company WHERE company_name = @company");
-    cmd.Parameters.AddWithValue("@company", company);
+    await using var cmd = db.CreateCommand("SELECT * FROM users_with_company WHERE company_name = @company_name");
+    cmd.Parameters.AddWithValue("@company_name", companyName);
 
     await using (var reader = await cmd.ExecuteReaderAsync())
     {
