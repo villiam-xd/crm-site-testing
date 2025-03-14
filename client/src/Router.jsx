@@ -5,6 +5,7 @@ import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import EmployeeView from "./pages/admin/EmployeeView.jsx";
 import NewEmployee from "./pages/admin/NewEmployee.jsx";
+import IssueForm from "./pages/issue/IssueForm.jsx";
 
 export default function Router() {
   return <>
@@ -14,6 +15,7 @@ export default function Router() {
           <Route index element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/:company_name/issueform" element={<IssueForm />} />
           <Route path="/admin/employees" element={<EmployeeView />} />
           <Route path="/admin/employees/new" element={<NewEmployee />} />
         </Route>
