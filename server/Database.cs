@@ -26,6 +26,8 @@ public class Database
         string connectionString = $"Host={_host};Port={_port};Username={_username};Password={_password};Database={_database}";
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
         dataSourceBuilder.MapEnum<Role>("role");
+        dataSourceBuilder.MapEnum<IssueState>("issue_state");
+        dataSourceBuilder.MapEnum<Sender>("sender");
         _connection = dataSourceBuilder.Build();
     }
 }
