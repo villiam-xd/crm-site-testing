@@ -32,6 +32,7 @@ app.MapGet("/api/users/bycompany/{companyName}", (Delegate)GetEmployeesByCompany
 app.MapPut("/api/users/{userId}", (Delegate)UpdateUser);
 app.MapDelete("/api/users/{userId}", (Delegate)DeleteUser);
 app.MapPost("/api/issue/create/{companyId}", (Delegate)CreateIssue);
+app.MapGet("/api/form/{companyName}", (Delegate)GetCompanyForm);
 
 async Task<IResult> Login(HttpContext context, LoginRequest loginRequest)
 {
@@ -349,6 +350,46 @@ async Task<IResult> CreateIssue(int companyId, CreateIssueRequest createIssueReq
     }
     
     return Results.Problem("Something went wrong.", statusCode: 500);
+}
+
+async Task<IResult> GetCompanyForm(string companyName)
+{
+    await using var cmd = db.CreateCommand("SELECT * FROM companys WHERE name = @company_name");
+    cmd.Parameters.AddWithValue("@company_name", companyName);
+    
+    try
+    {
+        var reader = await cmd.ExecuteScalarAsync();
+        if (reader is not null)
+        {
+            await using var cmd2 = db.CreateCommand("SELECT name FROM subjects WHERE company_id = @company_id");
+            cmd2.Parameters.AddWithValue("@company_id", (Int32) reader);
+
+            await using (var reader2 = await cmd2.ExecuteReaderAsync())
+            {
+                List<String> formSubjects = new List<string>();
+                while (await reader2.ReadAsync())
+                {
+                    formSubjects.Add(reader2.GetString(0));
+                }
+
+                if (formSubjects.Count == 0)
+                {
+                    return Results.NotFound(new { message = "No subjects was found." });
+                }
+                    
+                return Results.Ok(new {company_info = new CompanyForm((Int32) reader, companyName, formSubjects)});
+            }
+        }else
+        {
+            return Results.NotFound(new { message = "No company was found." });
+        }
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+        return Results.Problem("Something went wrong.", statusCode: 500);
+    }
 }
 
 await app.RunAsync();
