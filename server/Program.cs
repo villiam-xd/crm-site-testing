@@ -378,7 +378,7 @@ async Task<IResult> GetCompanyForm(string companyName)
                     return Results.NotFound(new { message = "No subjects was found." });
                 }
                     
-                return Results.Ok(new {company_info = new CompanyForm((Int32) reader, companyName, formSubjects)});
+                return Results.Ok(new {company_info = new CompanyForm(companyName, formSubjects)});
             }
         }else
         {
