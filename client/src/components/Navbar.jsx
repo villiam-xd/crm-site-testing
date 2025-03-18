@@ -31,7 +31,11 @@ export default function Navbar() {
                 <>
                     {
                         user.role == "ADMIN" ?
-                            <NavLink to={"/admin/employees"}>Employees</NavLink>
+                            <>
+                                <NavLink to={"/admin/employees"}>Employees</NavLink>
+                                <NavLink to={"/admin/form/edit"}>Form subjects</NavLink>
+                                <NavLink to={`/${user.company}/issueform`}>Veiw form</NavLink>
+                            </>
                             :
                             null
                     }
