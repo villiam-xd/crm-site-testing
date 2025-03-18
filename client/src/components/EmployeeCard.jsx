@@ -49,7 +49,7 @@ export default function EmployeeCard({ employee, getEmployees }) {
     }
 
     return <div className="employeeCard">
-        <div className={"employeeAttributes" + (hide ? " isActive" : "")} onClick={toggleMenus}>
+        <div className={"attributes" + (hide ? " isActive" : "")} onClick={toggleMenus}>
             <p>{employee.firstname}</p>
             <p>{employee.lastname}</p>
             <p>{employee.email}</p>
