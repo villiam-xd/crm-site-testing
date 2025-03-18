@@ -64,8 +64,36 @@ a:hover {
   color: #535bf2;
 }
 
+.attributes > * > button {
+  padding: 0.6em 1.2em;
+}
 
-.employeeView {
+.subjectButtons {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  .subjectDeleteButton {
+    background-color: darkred;
+  }
+  
+  .subjectUpdateButton {
+    background-color: darkgreen;
+  }
+}
+
+.updateSubjectForm {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  input {
+    flex-grow: 1;
+  }
+}
+
+.employeeView, .subjectView {
   width: 90%;
   display: flex;
   flex-direction: column;
@@ -81,7 +109,7 @@ a:hover {
   background-color: #363636;
 }
 
-.employeeListHeaders {
+.employeeListHeaders, .subjectListHeaders {
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
   background-color: #1d1d1d;
@@ -89,7 +117,7 @@ a:hover {
   gap: 10px;
   border-style: solid solid none ;
 
-  p {
+  * {
     margin: 0;
     flex-basis: 50%;
     font-size: larger;
@@ -98,19 +126,19 @@ a:hover {
     border-right-style: solid;
   }
 
-  p:last-child {
+  *:last-child {
     border-right-style: none;
   }
 }
 
-.employeeCard {
+.employeeCard, .subjectCard {
   border-style: solid solid none ;
 
-  .employeeAttributes{
+  .attributes{
     display: flex;
     gap: 10px;
 
-    p {
+    * {
       margin: 10px 0;
       width: 20%;
       padding: 0 10px;
@@ -120,7 +148,7 @@ a:hover {
       text-overflow: ellipsis;
     }
     
-    p:last-child {
+    *:last-child {
       border-right-style: none;
     }
   }
@@ -132,19 +160,19 @@ a:hover {
   }
 }
 
-.employeeCard:hover {
-  .employeeAttributes {
+.employeeCard:hover, .subjectCard:hover {
+  .attributes {
     background-color: #1d1d1d;
     cursor: pointer;
   }
 }
 
-.employeeCard:last-child {
+.employeeCard:last-child, .subjectCard:last-child {
   border-style: solid;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
 
-  .employeeAttributes:hover {
+  .attributes:hover {
     border-bottom-left-radius: 15px;
     border-bottom-right-radius: 15px;
   }
