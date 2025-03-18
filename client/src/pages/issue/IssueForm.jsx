@@ -8,7 +8,7 @@ export default function IssueForm() {
     const { company_name } = useParams()
 
     async function createIssue(formData) {
-        const response = await fetch(`/api/issue/create/${company_name}`, {
+        const response = await fetch(`/api/issues/create/${company_name}`, {
             method: "post",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
