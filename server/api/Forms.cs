@@ -16,8 +16,9 @@ public class Forms
         
         app.MapGet(url + "/{companyName}", (Delegate)GetCompanyForm);
         app.MapGet(url + "/subjects", (Delegate)GetFormSubjects);
-        app.MapPost(url + "/subject/create", (Delegate)CreateSubject);
-        app.MapPut(url + "/updateSubject", (Delegate)UpdateSubject);
+        app.MapPost(url + "/subjects", (Delegate)CreateSubject);
+        app.MapPut(url + "/subjects", (Delegate)UpdateSubject);
+        app.MapDelete(url + "/subjects/{subjectName}", (Delegate)DeleteSubject);
     }
     
     private async Task<IResult> GetCompanyForm(string companyName)
@@ -158,6 +159,42 @@ public class Forms
             if (reader == 1)
             {
                 return Results.Ok(new { message = "Subject was updated." });
+            }
+            else
+            {
+                return Results.Conflict(new { message = $"Query was executed, but {reader} rows was effected." });
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return Results.Problem("Something went wrong.", statusCode: 500);
+        }
+    }
+    
+    private async Task<IResult> DeleteSubject(string subjectName, HttpContext context)
+    {
+        if (context.Session.GetString("User") == null)
+        {
+            return Results.Unauthorized();
+        }
+        
+        var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+        if (user.Role != Role.ADMIN)
+        {
+            Results.Conflict(new { message = "You dont have access to this" });
+        }
+        
+        await using var cmd = Db.CreateCommand("DELETE FROM subjects WHERE company_id = @company_id AND name = @name");
+        cmd.Parameters.AddWithValue("@company_id", user.CompanyId);
+        cmd.Parameters.AddWithValue("@name", subjectName);
+    
+        try
+        {
+            var reader = await cmd.ExecuteNonQueryAsync();
+            if (reader == 1)
+            {
+                return Results.Ok(new { message = "Subject was deleted." });
             }
             else
             {
