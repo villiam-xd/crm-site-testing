@@ -30,7 +30,7 @@ export default function IssueForm() {
     }
 
     async function getCompanyForm() {
-        const response = await fetch(`/api/form/${company_name}`, { credentials: "include" })
+        const response = await fetch(`/api/forms/${company_name}`, { credentials: "include" })
         const result = await response.json()
 
         console.log("Company Form: ", result)
