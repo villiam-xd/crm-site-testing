@@ -78,6 +78,19 @@ create table messages
 alter table messages
     owner to postgres;
 
+create table subjects
+(
+    company_id integer not null
+        constraint subjects_companys_id_fk
+            references companys,
+    name       varchar not null,
+    constraint subjects_pk
+        primary key (company_id, name)
+);
+
+alter table subjects
+    owner to postgres;
+
 create view users_with_company
             (user_id, firstname, lastname, username, password, email, role, company_id, company_name) as
 SELECT u.id   AS user_id,
@@ -94,6 +107,8 @@ FROM users u
 
 alter table users_with_company
     owner to postgres;
+
+
 
 INSERT INTO public.companys (name) VALUES ('Demo AB');
 INSERT INTO public.companys (name) VALUES ('Test AB');
