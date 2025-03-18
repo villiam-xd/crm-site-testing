@@ -19,7 +19,7 @@ export default function EditForm() {
     }
 
     async function addSubject(formData) {
-        const response = await fetch(`/api/forms/subject/create`, {
+        const response = await fetch(`/api/forms/subjects`, {
             method: "post",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
