@@ -1,4 +1,6 @@
 ﻿using Npgsql;
+using server.Classes;
+using server.Enums;
 using server.Records;
 
 namespace server.api;
@@ -11,9 +13,88 @@ public class Issues
         Db = db;
         url += "/issues";
         
+        app.MapGet(url + "/{issueId}", (Delegate)GetIssue);
+        app.MapGet(url + "/{issueId}/messages", (Delegate)GetMessages);
         app.MapPost(url + "/create/{companyId}", (Delegate)CreateIssue);
+        app.MapPost(url + "/{issueId}/messages", (Delegate)CreateMessage);
     }
-    async Task<IResult> CreateIssue(int companyId, CreateIssueRequest createIssueRequest)
+    
+    private async Task<IResult> GetIssue(int issueId, HttpContext context)
+    {
+        await using var cmd = Db.CreateCommand("SELECT * FROM customers_issue_information WHERE id = @issue_id");
+        cmd.Parameters.AddWithValue("@issue_id", issueId);
+
+        try
+        {
+            await using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                Issue issue = null;
+                while (await reader.ReadAsync())
+                {
+                    issue = new Issue(
+                        reader.GetInt32(reader.GetOrdinal("id")),
+                        reader.GetString(reader.GetOrdinal("company_name")),
+                        reader.GetString(reader.GetOrdinal("customer_email")),
+                        reader.GetString(reader.GetOrdinal("subject")),
+                        Enum.Parse<IssueState>(reader.GetString(reader.GetOrdinal("state"))),
+                        reader.GetString(reader.GetOrdinal("title"))
+                    );
+                }
+
+                if (issue != null)
+                {
+                    return Results.Ok(issue);
+                }
+                else
+                {
+                    return Results.NotFound(new { message = "No issue found." });
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return Results.Problem("Something went wrong.", statusCode: 500);
+        }
+    }
+
+    private async Task<IResult> GetMessages(int issueId, HttpContext context)
+    {
+        await using var cmd = Db.CreateCommand("SELECT * FROM issue_messages WHERE issue_id = @issue_id");
+        cmd.Parameters.AddWithValue("@issue_id", issueId);
+
+        try
+        {
+            await using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                List<Message> messageList = new List<Message>();
+                while (reader.Read())
+                {
+                    messageList.Add(new Message(
+                        reader.GetString(reader.GetOrdinal("message")),
+                        reader.GetString(reader.GetOrdinal("sender")),
+                        reader.GetString(reader.GetOrdinal("username"))
+                        ));
+                }
+
+                if (messageList.Count > 0)
+                {
+                    return Results.Ok(new { messages = messageList});
+                }
+                else
+                {
+                    return Results.NotFound(new { message = "No messages found." });
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return Results.Problem("Something went wrong.", statusCode: 500);
+        }
+    }
+    
+    private async Task<IResult> CreateIssue(int companyId, CreateIssueRequest createIssueRequest)
     {
         await using var cmd = Db.CreateCommand("INSERT INTO issues (company_id, customer_email, title, subject, state) VALUES (@company_id, @customer_email, @title, @subject, 'NEW') RETURNING id;");
         cmd.Parameters.AddWithValue("@company_id", companyId);
@@ -25,7 +106,7 @@ public class Issues
         {
             if (await reader.ReadAsync())
             {
-                await using var cmd2 = Db.CreateCommand("INSERT INTO messages (issue_id, message, sender) VALUES (@issue_id, @message, 'CUSTOMER');");
+                await using var cmd2 = Db.CreateCommand("INSERT INTO messages (issue_id, message, sender) VALUES (@issue_id, @message, 'CUSTOMER')");
                 cmd2.Parameters.AddWithValue("@issue_id", reader.GetInt32(reader.GetOrdinal("id")));
                 cmd2.Parameters.AddWithValue("@message", createIssueRequest.Message);
                     
@@ -53,6 +134,32 @@ public class Issues
         }
         
         return Results.Problem("Something went wrong.", statusCode: 500);
+    }
+
+    private async Task<IResult> CreateMessage(int issueId, CreateMessageRequest createMessageRequest)
+    {
+        await using var cmd = Db.CreateCommand("INSERT INTO messages (issue_id, message, sender, username) VALUES (@issue_id, @message, 'CUSTOMER', @username)");
+        cmd.Parameters.AddWithValue("@issue_id", issueId);
+        cmd.Parameters.AddWithValue("@message", createMessageRequest.Message);
+        cmd.Parameters.AddWithValue("@username", createMessageRequest.Username);
+        
+        try
+        {
+            var reader = await cmd.ExecuteNonQueryAsync();
+            if (reader == 1)
+            {
+                return Results.Ok(new { message = "Message was created successfully." });
+            }
+            else
+            {
+                return Results.Conflict(new { message = "Query executed but something went wrong." });
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);   
+            return Results.Problem("Something went wrong.", statusCode: 500);
+        }
     }
 
 }
