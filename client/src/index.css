@@ -196,7 +196,7 @@ a:hover {
   }
 }
 
-#employeeViewMenu {
+#employeeViewMenu, #subjectViewMenu {
   width: 95%;
   margin: 20px 0;
   padding: 0 30px;

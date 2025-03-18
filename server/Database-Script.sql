@@ -1,15 +1,3 @@
-create type role as enum ('USER', 'ADMIN');
-
-alter type role owner to postgres;
-
-create type issue_state as enum ('CLOSED', 'OPEN', 'NEW');
-
-alter type issue_state owner to postgres;
-
-create type sender as enum ('CUSTOMER', 'SUPPORT', 'BOT');
-
-alter type sender owner to postgres;
-
 create table companys
 (
     id   serial
@@ -80,35 +68,17 @@ alter table messages
 
 create table subjects
 (
-    company_id integer not null
-        constraint subjects_companys_id_fk
-            references companys,
-    name       varchar not null,
-    constraint subjects_pk
-        primary key (company_id, name)
+    id         serial
+        constraint subjects_pk
+            primary key,
+    company_id integer,
+    name       varchar,
+    constraint subjects_pk_2
+        unique (company_id, name)
 );
 
 alter table subjects
     owner to postgres;
-
-create view users_with_company
-            (user_id, firstname, lastname, username, password, email, role, company_id, company_name) as
-SELECT u.id   AS user_id,
-       u.firstname,
-       u.lastname,
-       u.username,
-       u.password,
-       u.email,
-       u.role,
-       c.id   AS company_id,
-       c.name AS company_name
-FROM users u
-         JOIN companys c ON u.company = c.id;
-
-alter table users_with_company
-    owner to postgres;
-
-
 
 INSERT INTO public.companys (name) VALUES ('Demo AB');
 INSERT INTO public.companys (name) VALUES ('Test AB');
@@ -116,3 +86,7 @@ INSERT INTO public.companys (name) VALUES ('Test AB');
 INSERT INTO public.users (firstname, lastname, username, password, role, email, company) VALUES ( 'Admin', 'Adminsson','Master', 'abc123', 'ADMIN', 'm@email.com', 1);
 INSERT INTO public.users (firstname, lastname, username, password, role, email, company) VALUES ( 'Linus', 'Lindroth','no92one', 'abc123', 'USER', 'no@email.com', 1);
 INSERT INTO public.users (firstname, lastname, username, password, role, email, company) VALUES ( 'Testaren', 'Testsson','Testare', 'abc123', 'ADMIN', 'test@gmail.com', 2);
+
+INSERT INTO public.subjects (company_id, name) VALUES (1, 'Reklamation');
+INSERT INTO public.subjects (company_id, name) VALUES (1, 'Skada');
+INSERT INTO public.subjects (company_id, name) VALUES (1, 'Övrigt');

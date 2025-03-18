@@ -16,6 +16,7 @@ public class Forms
         
         app.MapGet(url + "/{companyName}", (Delegate)GetCompanyForm);
         app.MapGet(url + "/subjects", (Delegate)GetFormSubjects);
+        app.MapPost(url + "/subject/create", (Delegate)CreateSubject);
         app.MapPut(url + "/updateSubject", (Delegate)UpdateSubject);
     }
     
@@ -98,6 +99,41 @@ public class Forms
         }
     }
 
+    private async Task<IResult> CreateSubject(HttpContext context, CreateSubjectRequest createSubjectRequest)
+    {
+        if (context.Session.GetString("User") == null)
+        {
+            return Results.Unauthorized();
+        }
+        
+        var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+        if (user.Role != Role.ADMIN)
+        {
+            Results.Conflict(new { message = "You dont have access to this" });
+        }
+        
+        await using var cmd = Db.CreateCommand("INSERT INTO subjects (company_id, name) VALUES (@company_id, @name)");
+        cmd.Parameters.AddWithValue("@company_id", user.CompanyId);
+        cmd.Parameters.AddWithValue("@name", createSubjectRequest.Name);
+        try
+        {
+            var reader = await cmd.ExecuteNonQueryAsync();
+            if (reader == 1)
+            {
+                return Results.Ok(new { message = "Subject was successfully created." });
+            }
+            else
+            {
+                return Results.Conflict(new { message = $"Query was executed, but {reader} rows was effected." });
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return Results.Problem("Something went wrong.", statusCode: 500);
+        }
+    }
+    
     private async Task<IResult> UpdateSubject(HttpContext context, UpdateSubjectRequest updateSubjectRequest)
     {
         if (context.Session.GetString("User") == null)
@@ -121,7 +157,7 @@ public class Forms
             var reader = await cmd.ExecuteNonQueryAsync();
             if (reader == 1)
             {
-                return Results.Ok(new { message = "User registered." });
+                return Results.Ok(new { message = "Subject was updated." });
             }
             else
             {
