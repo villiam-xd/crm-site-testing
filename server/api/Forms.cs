@@ -1,5 +1,8 @@
-﻿using Npgsql;
+﻿using System.Text.Json;
+using Npgsql;
 using server.Classes;
+using server.Enums;
+using server.Records;
 
 namespace server.api;
 
@@ -12,10 +15,11 @@ public class Forms
         url += "/forms";
         
         app.MapGet(url + "/{companyName}", (Delegate)GetCompanyForm);
+        app.MapGet(url + "/subjects", (Delegate)GetFormSubjects);
+        app.MapPut(url + "/updateSubject", (Delegate)UpdateSubject);
     }
     
-    
-    async Task<IResult> GetCompanyForm(string companyName)
+    private async Task<IResult> GetCompanyForm(string companyName)
     {
         await using var cmd = Db.CreateCommand("SELECT * FROM companys WHERE name = @company_name");
         cmd.Parameters.AddWithValue("@company_name", companyName);
@@ -25,7 +29,7 @@ public class Forms
             var reader = await cmd.ExecuteScalarAsync();
             if (reader is not null)
             {
-                await using var cmd2 = Db.CreateCommand("SELECT name FROM subjects WHERE company_id = @company_id");
+                await using var cmd2 = Db.CreateCommand("SELECT name FROM subjects WHERE company_id = @company_id ORDER BY id");
                 cmd2.Parameters.AddWithValue("@company_id", (Int32) reader);
 
                 await using (var reader2 = await cmd2.ExecuteReaderAsync())
@@ -46,6 +50,82 @@ public class Forms
             }else
             {
                 return Results.NotFound(new { message = "No company was found." });
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return Results.Problem("Something went wrong.", statusCode: 500);
+        }
+    }
+
+    private async Task<IResult> GetFormSubjects(HttpContext context)
+    {
+        if (context.Session.GetString("User") == null)
+        {
+            return Results.Unauthorized();
+        }
+        
+        var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+        
+        await using var cmd = Db.CreateCommand("SELECT * FROM subjects WHERE company_id = @company_id ORDER BY id");
+        cmd.Parameters.AddWithValue("@company_id", user.CompanyId);
+
+        try
+        {
+            await using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                List<String> formSubjects = new List<string>();
+                while (reader.Read())
+                {
+                    formSubjects.Add(reader.GetString(reader.GetOrdinal("name")));
+                }
+                
+                if (formSubjects.Count > 0)
+                {
+                    return Results.Ok(new { subjects = formSubjects });
+                }
+                else
+                {
+                    return Results.NotFound(new { message = "No subjects were found." });
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return Results.Problem("Something went wrong.", statusCode: 500);
+        }
+    }
+
+    private async Task<IResult> UpdateSubject(HttpContext context, UpdateSubjectRequest updateSubjectRequest)
+    {
+        if (context.Session.GetString("User") == null)
+        {
+            return Results.Unauthorized();
+        }
+        
+        var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+        if (user.Role != Role.ADMIN)
+        {
+            Results.Conflict(new { message = "You dont have access to this" });
+        }
+        
+        await using var cmd = Db.CreateCommand("UPDATE subjects SET name = @new_name WHERE company_id = @company_id AND name = @old_name");
+        cmd.Parameters.AddWithValue("@new_name", updateSubjectRequest.NewName);
+        cmd.Parameters.AddWithValue("@company_id", user.CompanyId);
+        cmd.Parameters.AddWithValue("@old_name", updateSubjectRequest.OldName);
+    
+        try
+        {
+            var reader = await cmd.ExecuteNonQueryAsync();
+            if (reader == 1)
+            {
+                return Results.Ok(new { message = "User registered." });
+            }
+            else
+            {
+                return Results.Conflict(new { message = $"Query was executed, but {reader} rows was effected." });
             }
         }
         catch (Exception e)
