@@ -18,7 +18,7 @@ public class Issues
         app.MapGet(url + "/{issueId}", (Delegate)GetIssue);
         app.MapPut(url + "/{issueId}/state", (Delegate)UpdateIssueState);
         app.MapGet(url + "/{issueId}/messages", (Delegate)GetMessages);
-        app.MapPost(url + "/create/{companyId}", (Delegate)CreateIssue);
+        app.MapPost(url + "/create/{companyName}", (Delegate)CreateIssue);
         app.MapPost(url + "/{issueId}/messages", (Delegate)CreateMessage);
     }
 
@@ -178,25 +178,37 @@ public class Issues
         }
     }
     
-    private async Task<IResult> CreateIssue(int companyId, CreateIssueRequest createIssueRequest)
+    private async Task<IResult> CreateIssue(string companyName, CreateIssueRequest createIssueRequest)
     {
-        await using var cmd = Db.CreateCommand("INSERT INTO issues (company_id, customer_email, title, subject, state, created) VALUES (@company_id, @customer_email, @title, @subject, 'NEW', current_timestamp) RETURNING id;");
-        cmd.Parameters.AddWithValue("@company_id", companyId);
-        cmd.Parameters.AddWithValue("@customer_email", createIssueRequest.Email);
-        cmd.Parameters.AddWithValue("@title", createIssueRequest.Title);
-        cmd.Parameters.AddWithValue("@subject", createIssueRequest.Subject);
+        await using var cmd = Db.CreateCommand("SELECT * FROM companys WHERE name = @company_name");
+        cmd.Parameters.AddWithValue("@company_name", companyName);
 
-        await using (var reader = await cmd.ExecuteReaderAsync())
+        try
         {
-            if (await reader.ReadAsync())
+            var companyId = await cmd.ExecuteScalarAsync();
+            if (companyId is null)
             {
-                await using var cmd2 = Db.CreateCommand("INSERT INTO messages (issue_id, message, sender) VALUES (@issue_id, @message, 'CUSTOMER')");
-                cmd2.Parameters.AddWithValue("@issue_id", reader.GetInt32(reader.GetOrdinal("id")));
-                cmd2.Parameters.AddWithValue("@message", createIssueRequest.Message);
+                return Results.NotFound(new { message = "No company found." });
+            }
+        
+            
+            await using var cmd2 = Db.CreateCommand("INSERT INTO issues (company_id, customer_email, title, subject, state, created) VALUES (@company_id, @customer_email, @title, @subject, 'NEW', current_timestamp) RETURNING id;");
+            cmd2.Parameters.AddWithValue("@company_id", companyId);
+            cmd2.Parameters.AddWithValue("@customer_email", createIssueRequest.Email);
+            cmd2.Parameters.AddWithValue("@title", createIssueRequest.Title);
+            cmd2.Parameters.AddWithValue("@subject", createIssueRequest.Subject);
+
+            var issuesId = await cmd2.ExecuteScalarAsync();
+            if (issuesId is not null)
+            {
+                await using var cmd3 = Db.CreateCommand("INSERT INTO messages (issue_id, message, sender, username, time) VALUES (@issue_id, @message, 'CUSTOMER', @username, current_timestamp)");
+                cmd3.Parameters.AddWithValue("@issue_id", issuesId);
+                cmd3.Parameters.AddWithValue("@message", createIssueRequest.Message);
+                cmd3.Parameters.AddWithValue("@username", createIssueRequest.Email);
                     
                 try
                 {
-                    int rowsAffected = await cmd2.ExecuteNonQueryAsync();
+                    int rowsAffected = await cmd3.ExecuteNonQueryAsync();
                     if (rowsAffected == 1)
                     {
                         return Results.Ok(new { message = "Issue was created successfully." });
@@ -206,18 +218,26 @@ public class Issues
                         return Results.Conflict(new { message = "Query executed but something went wrong." });
                     }
                 }
-                catch
+                catch (Exception e)
                 {
-                    await using var cmd3 = Db.CreateCommand("DELETE FROM issues WHERE id = @issue_id;");
-                    cmd3.Parameters.AddWithValue("@issue_id", reader.GetInt32(reader.GetOrdinal("id")));
-                    await cmd3.ExecuteNonQueryAsync();
+                    Console.WriteLine(e.Message);
+                    await using var cmd4 = Db.CreateCommand("DELETE FROM issues WHERE id = @issue_id;");
+                    cmd4.Parameters.AddWithValue("@issue_id", issuesId);
+                    await cmd4.ExecuteNonQueryAsync();
                         
                     return Results.Conflict(new { message = "Issue was created, but something went wrong during the process, so the issue has been deleted." });
                 }
             }
+            else
+            {
+                return Results.Problem("Something went wrong.", statusCode: 500);   
+            }
         }
-        
-        return Results.Problem("Something went wrong.", statusCode: 500);
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return Results.Problem("Something went wrong.", statusCode: 500);
+        }
     }
 
     private async Task<IResult> CreateMessage(int issueId, CreateMessageRequest createMessageRequest)
