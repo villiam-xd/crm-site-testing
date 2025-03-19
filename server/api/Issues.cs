@@ -180,7 +180,7 @@ public class Issues
     
     private async Task<IResult> CreateIssue(int companyId, CreateIssueRequest createIssueRequest)
     {
-        await using var cmd = Db.CreateCommand("INSERT INTO issues (company_id, customer_email, title, subject, state, created) VALUES (@company_id, @customer_email, @title, @subject, 'NEW', current_time) RETURNING id;");
+        await using var cmd = Db.CreateCommand("INSERT INTO issues (company_id, customer_email, title, subject, state, created) VALUES (@company_id, @customer_email, @title, @subject, 'NEW', current_timestamp) RETURNING id;");
         cmd.Parameters.AddWithValue("@company_id", companyId);
         cmd.Parameters.AddWithValue("@customer_email", createIssueRequest.Email);
         cmd.Parameters.AddWithValue("@title", createIssueRequest.Title);
@@ -222,9 +222,10 @@ public class Issues
 
     private async Task<IResult> CreateMessage(int issueId, CreateMessageRequest createMessageRequest)
     {
-        await using var cmd = Db.CreateCommand("INSERT INTO messages (issue_id, message, sender, username, time) VALUES (@issue_id, @message, 'CUSTOMER', @username, current_time)");
+        await using var cmd = Db.CreateCommand("INSERT INTO messages (issue_id, message, sender, username, time) VALUES (@issue_id, @message, @sender::sender, @username, current_timestamp)");
         cmd.Parameters.AddWithValue("@issue_id", issueId);
         cmd.Parameters.AddWithValue("@message", createMessageRequest.Message);
+        cmd.Parameters.AddWithValue("@sender", Enum.Parse<Sender>(createMessageRequest.Sender).ToString());
         cmd.Parameters.AddWithValue("@username", createMessageRequest.Username);
         
         try
