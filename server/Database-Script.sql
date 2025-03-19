@@ -57,7 +57,8 @@ create table issues
     customer_email varchar     not null,
     subject        varchar,
     state          issue_state not null,
-    title          varchar
+    title          varchar,
+    created        timestamp   not null
 );
 
 alter table issues
@@ -68,12 +69,13 @@ create table messages
     id       serial
         constraint messages_pk
             primary key,
-    issue_id integer not null
+    issue_id integer   not null
         constraint messages_issues_id_fk
             references issues,
-    message  text    not null,
-    sender   sender  not null,
-    username varchar not null
+    message  text      not null,
+    sender   sender    not null,
+    username varchar   not null,
+    time     timestamp not null
 );
 
 alter table messages
@@ -110,25 +112,32 @@ FROM users u
 alter table users_with_company
     owner to postgres;
 
-create view customers_issue_information(id, company_name, customer_email, subject, state, title) as
+create view companys_issues (id, company_name, customer_email, subject, state, title, created, latest) as
 SELECT i.id,
-       c.name AS company_name,
+       c.name   AS company_name,
        i.customer_email,
        i.subject,
        i.state,
-       i.title
+       i.title,
+       i.created,
+       m."time" AS latest
 FROM issues i
-         JOIN companys c ON i.company_id = c.id;
+         JOIN companys c ON i.company_id = c.id
+         JOIN (SELECT messages.issue_id,
+                      max(messages."time") AS "time"
+               FROM messages
+               GROUP BY messages.issue_id) m ON i.id = m.issue_id;
 
-alter table customers_issue_information
+alter table companys_issues
     owner to postgres;
 
-create view issue_messages(id, issue_id, message, sender, username) as
+create view issue_messages(id, issue_id, message, sender, username, time) as
 SELECT m.id,
        m.issue_id,
        m.message,
        m.sender,
-       m.username
+       m.username,
+       m."time"
 FROM messages m
          JOIN issues i ON m.issue_id = i.id
 ORDER BY m.id;
@@ -147,9 +156,9 @@ INSERT INTO subjects (company_id, name) VALUES (1, 'Reklamation');
 INSERT INTO subjects (company_id, name) VALUES (1, 'Skada');
 INSERT INTO subjects (company_id, name) VALUES (1, 'Övrigt');
 
-INSERT INTO issues (company_id, customer_email, subject, state, title) VALUES (1, 'Linus@email.test', 'Test', 'NEW', 'Test Issue');
-INSERT INTO issues (company_id, customer_email, subject, state, title) VALUES ( 1, 'linus.lindroth.92@gmail.com', 'Övrigt', 'NEW', 'Test Issue');
+INSERT INTO issues (company_id, customer_email, subject, state, title, created) VALUES (1, 'Linus@email.test', 'Test', 'NEW', 'Test Issue', '2025-03-17 16:32:07.000000');
+INSERT INTO issues (company_id, customer_email, subject, state, title, created) VALUES ( 1, 'linus.lindroth.92@gmail.com', 'Övrigt', 'NEW', 'Test Issue 2', '2025-03-17 10:05:37.000000');
 
-INSERT INTO messages (issue_id, message, sender, username) VALUES (2, 'Some message.', 'CUSTOMER', 'Linus@email.test');
-INSERT INTO messages (issue_id, message, sender, username) VALUES (3, 'This is just a test.', 'CUSTOMER', 'linus.lindroth.92@gmail.com');
-INSERT INTO messages (issue_id, message, sender, username) VALUES (2, ' Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo corporis nemo error provident eligendi consequuntur cum aliquam placeat aspernatur amet dolore ut quasi impedit culpa laboriosam suscipit, nobis natus nesciunt. Aliquam exercitationem facere in cupiditate voluptates voluptatum, perspiciatis est quidem dolores veniam magnam atque vitae. Rerum aut id delectus debitis exercitationem eos harum perspiciatis, voluptatem tenetur officiis libero aliquam iste. Repellendus autem placeat hic odit dignissimos. Blanditiis odio, facilis sequi ratione repudiandae iusto, distinctio reiciendis consectetur deleniti eius fugit numquam laborum nobis quasi magnam cupiditate laudantium illo, provident labore. Impedit.', 'CUSTOMER', 'Linus@email.test');
+INSERT INTO messages (issue_id, message, sender, username, time) VALUES (1, 'Some message.', 'CUSTOMER', 'Linus@email.test', '2025-03-17 10:05:37.000000');
+INSERT INTO messages (issue_id, message, sender, username, time) VALUES (2, 'This is just a test.', 'CUSTOMER', 'linus.lindroth.92@gmail.com', '2025-03-17 16:32:07.000000');
+INSERT INTO messages (issue_id, message, sender, username, time) VALUES (1, ' Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo corporis nemo error provident eligendi consequuntur cum aliquam placeat aspernatur amet dolore ut quasi impedit culpa laboriosam suscipit, nobis natus nesciunt. Aliquam exercitationem facere in cupiditate voluptates voluptatum, perspiciatis est quidem dolores veniam magnam atque vitae. Rerum aut id delectus debitis exercitationem eos harum perspiciatis, voluptatem tenetur officiis libero aliquam iste. Repellendus autem placeat hic odit dignissimos. Blanditiis odio, facilis sequi ratione repudiandae iusto, distinctio reiciendis consectetur deleniti eius fugit numquam laborum nobis quasi magnam cupiditate laudantium illo, provident labore. Impedit.', 'CUSTOMER', 'Linus@email.test', '2025-03-18 10:08:02.000000');
