@@ -30,6 +30,7 @@ export default function Navbar() {
                 </>
                 :
                 <>
+                    <NavLink to={"/employee/issues"}>Issues</NavLink>
                     {
                         user.role == "ADMIN" ?
                             <>

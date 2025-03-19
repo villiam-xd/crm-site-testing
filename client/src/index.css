@@ -68,7 +68,7 @@ a:hover {
   padding: 0.6em 1.2em;
 }
 
-.subjectButtons {
+.subjectButtons, .stateButtons {
   width: 100%;
   display: flex;
   justify-content: space-around;
@@ -78,12 +78,29 @@ a:hover {
     background-color: darkred;
   }
   
-  .subjectUpdateButton {
+  .subjectUpdateButton, .stateUpdateButton {
     background-color: darkgreen;
   }
 }
 
-.updateSubjectForm {
+.stateColumn {
+  display: flex;
+  justify-content: space-between;
+
+  p {
+    flex-grow: 1;
+  }
+}
+
+.stateButtons > button {
+    padding: 0.1em 1.2em;;
+  }
+
+.stateSelect {
+  width: 100%;
+}
+
+.updateSubjectForm, .updateStateForm {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -93,7 +110,7 @@ a:hover {
   }
 }
 
-.employeeView, .subjectView {
+.employeeView, .subjectView, .issuesView {
   width: 90%;
   display: flex;
   flex-direction: column;
@@ -109,7 +126,7 @@ a:hover {
   background-color: #363636;
 }
 
-.employeeListHeaders, .subjectListHeaders {
+.employeeListHeaders, .subjectListHeaders, .issuesListHeaders {
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
   background-color: #1d1d1d;
@@ -131,14 +148,15 @@ a:hover {
   }
 }
 
-.employeeCard, .subjectCard {
+.employeeCard, .subjectCard, .issueCard {
   border-style: solid solid none ;
 
   .attributes{
     display: flex;
+    align-items: center;
     gap: 10px;
 
-    * {
+    > * {
       margin: 10px 0;
       width: 20%;
       padding: 0 10px;
@@ -148,7 +166,7 @@ a:hover {
       text-overflow: ellipsis;
     }
     
-    *:last-child {
+    > *:last-child {
       border-right-style: none;
     }
   }
@@ -160,14 +178,18 @@ a:hover {
   }
 }
 
-.employeeCard:hover, .subjectCard:hover {
+.stateForm {
+  gap: 10px
+}
+
+.employeeCard:hover, .subjectCard:hover, .issueCard:hover {
   .attributes {
     background-color: #1d1d1d;
     cursor: pointer;
   }
 }
 
-.employeeCard:last-child, .subjectCard:last-child {
+.employeeCard:last-child, .subjectCard:last-child, .issueCard:last-child {
   border-style: solid;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
@@ -196,7 +218,7 @@ a:hover {
   }
 }
 
-#employeeViewMenu, #subjectViewMenu {
+#employeeViewMenu, #subjectViewMenu, .issueViewMenu {
   width: 95%;
   margin: 20px 0;
   padding: 0 30px;
@@ -250,8 +272,6 @@ button:focus-visible {
     background-color: rgb(249, 249, 249);
   }
 }
-
-
 
 #issueChat {
   width: 80%;
@@ -344,3 +364,4 @@ button:focus-visible {
     flex-grow: 1;
   }
 }
+

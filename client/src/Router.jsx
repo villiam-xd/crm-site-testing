@@ -8,6 +8,7 @@ import NewEmployee from "./pages/admin/NewEmployee.jsx";
 import IssueForm from "./pages/issue/IssueForm.jsx";
 import EditForm from "./pages/admin/EditForm.jsx";
 import Chat from "./pages/customer/Chat.jsx";
+import IssueView from "./pages/employee/IssueView.jsx";
 
 export default function Router() {
   return <>
@@ -19,6 +20,7 @@ export default function Router() {
           <Route path="/login" element={<Login />} />
           <Route path="/chat/:issue_id" element={<Chat />} />
           <Route path="/:company_name/issueform" element={<IssueForm />} />
+          <Route path="/employee/issues" element={<IssueView />} />
           <Route path="/admin/employees" element={<EmployeeView />} />
           <Route path="/admin/employees/new" element={<NewEmployee />} />
           <Route path="/admin/form/edit" element={<EditForm />} />
