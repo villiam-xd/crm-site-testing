@@ -3,6 +3,7 @@ using Npgsql;
 using server.Classes;
 using server.Enums;
 using server.Records;
+using server.Services;
 
 namespace server.api;
 
@@ -178,7 +179,7 @@ public class Issues
         }
     }
     
-    private async Task<IResult> CreateIssue(string companyName, CreateIssueRequest createIssueRequest)
+    private async Task<IResult> CreateIssue(string companyName, CreateIssueRequest createIssueRequest, IEmailService email)
     {
         await using var cmd = Db.CreateCommand("SELECT * FROM companys WHERE name = @company_name");
         cmd.Parameters.AddWithValue("@company_name", companyName);
@@ -211,6 +212,12 @@ public class Issues
                     int rowsAffected = await cmd3.ExecuteNonQueryAsync();
                     if (rowsAffected == 1)
                     {
+                        await email.SendEmailAsync(createIssueRequest.Email, 
+                            $"{companyName} - ISSUE: {createIssueRequest.Title}", 
+                            IssueCreatedMessage(companyName, 
+                                createIssueRequest.Message, 
+                                createIssueRequest.Title,
+                                issuesId.ToString()));
                         return Results.Ok(new { message = "Issue was created successfully." });
                     }
                     else
@@ -267,4 +274,15 @@ public class Issues
         }
     }
 
+    private string IssueCreatedMessage(string companyName, string message, string title, string chatId)
+    {
+        return $"<h1>{companyName}</h1>" +
+               $"<br> <p>Tack för att du kontaktade oss!</p>" +
+               "<p>Vi har tagit emot dit meddelande: </p>" +
+               $"<br> <p><i>{message}</i></p> <br>" +
+               $"<p>Vi har skapat ett chatt-rum där du kan prata direkt med en av våra kundtjänstmedarbetare angående ditt ärende <strong>{title}</strong>.</p>" +
+               $"<p>För att ansluta till chatten, <a href='http://localhost:5173/chat/{{chatId}}'> klicka på denna länken.</a></p>" +
+               $"<br> <br> <p>Vänliga hälsningar,</p>" +
+               $"<p><strong>{companyName}</strong> kundtjänst.<br>";
+    }
 }
