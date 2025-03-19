@@ -10,7 +10,7 @@ public interface IEmailService
     Task SendEmailAsync(string to, string subject, string body);
 }
 
-public class EmailService
+public class EmailService : IEmailService
 {
     private readonly EmailSettings _settings;
 
@@ -24,7 +24,7 @@ public class EmailService
             From = { MailboxAddress.Parse(_settings.FromEmail) },
             To = { MailboxAddress.Parse(to) },
             Subject = subject,
-            Body = new TextPart("plain") { Text = body }
+            Body = new TextPart("html") { Text = body }
         };
 
         using var smtp = new SmtpClient();

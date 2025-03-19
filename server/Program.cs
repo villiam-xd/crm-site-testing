@@ -1,6 +1,8 @@
 using Npgsql;
 using server;
 using server.api;
+using server.Config;
+using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,17 @@ builder.Services.AddSession(options =>
 
 Database database = new Database();
 NpgsqlDataSource db = database.Connection();
+
+var emailSettings = builder.Configuration.GetSection("Email").Get<EmailSettings>();
+if (emailSettings != null)
+{
+    builder.Services.AddSingleton(emailSettings);
+}
+else
+{
+    throw new InvalidOperationException("Email settings are not configured properly.");
+}
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
