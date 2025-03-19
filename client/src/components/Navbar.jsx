@@ -21,7 +21,7 @@ export default function Navbar() {
 
     return <nav>
         <NavLink to={"/"}>Home</NavLink>
-        <NavLink to={"/chat/2"}>Customer Chat</NavLink>
+        <NavLink to={"/chat/1"}>Customer Chat</NavLink>
         {
             user == null ?
                 <>
@@ -30,6 +30,7 @@ export default function Navbar() {
                 </>
                 :
                 <>
+                    <NavLink to={"employee/chat/1"}>Employee Chat</NavLink>
                     <NavLink to={"/employee/issues"}>Issues</NavLink>
                     {
                         user.role == "ADMIN" ?

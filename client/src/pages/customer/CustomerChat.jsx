@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router"
+import Chat from "../../components/Chat.jsx"
 
-export default function Chat() {
+export default function CustomerChat() {
     const { issue_id } = useParams()
     const [issue, setIssue] = useState(null)
     const [messages, setMessages] = useState([])
@@ -67,20 +68,7 @@ export default function Chat() {
                 <p id="issueTitle">Title: {issue.title}</p>
                 <p id="issueState">State: {issue.state}</p>
             </div>
-            <div id="chat">
-                <div id="messageList">
-                    {
-                        messages.map((message, index) => <div key={index} className="message">
-                            <p className="messageText">{message.text}</p>
-                            <p className="messageInfo"><span className="messageUsername">{message.username}</span> - <span className="messageTime">10 mars 2025 23:12</span></p>
-                        </div>)
-                    }
-                </div>
-                <form action={sendMessage} id="sendMessage">
-                    <input type="text" name="message" placeholder="Type message" required />
-                    <button type="submit">Send</button>
-                </form>
-            </div>
+            <Chat messages={messages} issue_id={issue_id} getMessages={getMessages} customerSupport={false} username={issue.customerEmail} role={"CUSTOMER"} />
         </div>
 }
 
