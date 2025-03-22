@@ -23,7 +23,7 @@ export default function Home() {
         <h2>All our partners</h2>
         <div id="companiesList">
             {
-                companies.map(company => <NavLink to={`/${company}/issueform`}>{company}</NavLink>)
+                companies.map(company => <NavLink key={company} to={`/${company}/issueform`}>{company}</NavLink>)
             }
         </div>
     </div>
