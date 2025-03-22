@@ -28,7 +28,6 @@ export default function Chat({ messages, issue_id, getMessages, customerSupport,
         })
 
         const result = await response.json()
-        console.log(result)
 
         if (response.ok) {
             getMessages()

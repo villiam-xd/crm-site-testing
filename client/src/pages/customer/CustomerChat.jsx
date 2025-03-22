@@ -24,7 +24,6 @@ export default function CustomerChat() {
         })
 
         const result = await response.json()
-        console.log(result)
 
         if (response.ok) {
             getMessages()
@@ -37,7 +36,6 @@ export default function CustomerChat() {
         const response = await fetch(`/api/issues/${issue_id}`, { credentials: "include" })
         const result = await response.json()
 
-        console.log(result)
         if (response.ok) {
             setIssue(result)
             getMessages()
@@ -49,7 +47,6 @@ export default function CustomerChat() {
         const response = await fetch(`/api/issues/${issue_id}/messages`, { credentials: "include" })
         const result = await response.json()
 
-        console.log(result)
         if (response.ok) {
             setMessages(result.messages)
         }

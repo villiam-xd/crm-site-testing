@@ -25,7 +25,6 @@ export default function EmployeeChat() {
         const result = await response.json()
 
         if (response.ok) {
-            console.log(result)
             getIssueInfo()
             setEditState(true)
         } else {
@@ -37,7 +36,6 @@ export default function EmployeeChat() {
         const response = await fetch(`/api/issues/${issue_id}`, { credentials: "include" })
         const result = await response.json()
 
-        console.log(result)
         if (response.ok) {
             setIssue(result)
             setIssueState(result.state)
@@ -50,7 +48,6 @@ export default function EmployeeChat() {
         const response = await fetch(`/api/issues/${issue_id}/messages`, { credentials: "include" })
         const result = await response.json()
 
-        console.log(result)
         if (response.ok) {
             setMessages(result.messages)
         }
