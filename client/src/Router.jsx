@@ -19,8 +19,8 @@ export default function Router() {
           <Route index element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/chat/:issue_id" element={<CustomerChat />} />
           <Route path="/:company_name/issueform" element={<IssueForm />} />
+          <Route path="/chat/:issue_id" element={<CustomerChat />} />
           <Route path="/employee/issues" element={<IssueView />} />
           <Route path="/employee/chat/:issue_id" element={<EmployeeChat />} />
           <Route path="/admin/employees" element={<EmployeeView />} />

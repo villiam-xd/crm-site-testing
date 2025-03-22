@@ -49,6 +49,25 @@ label {
   flex-direction: column;
 }
 
+#companyName {
+  text-align: center;
+}
+
+#startpage {
+  text-align: center;
+}
+
+#companiesList {
+  font-size: larger;
+  display: flex;
+  flex-wrap: wrap;
+
+  a {
+    width: 50%;
+    padding: 5px 0;
+  }
+}
+
 .radiobutton {
   margin: 5px 0;
   display: flex;
