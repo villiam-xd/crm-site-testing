@@ -13,7 +13,6 @@ export default function Home() {
         } else {
             alert(result.message)
         }
-
     }
 
     useEffect(() => {
