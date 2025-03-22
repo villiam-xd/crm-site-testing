@@ -39,6 +39,6 @@ new Login(app, db, url);
 new Users(app, db, url);
 new Issues(app, db, url);
 new Forms(app, db, url);
-
+new Companies(app, db, url);
 
 await app.RunAsync();
