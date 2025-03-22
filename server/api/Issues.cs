@@ -281,7 +281,7 @@ public class Issues
                "<p>Vi har tagit emot dit meddelande: </p>" +
                $"<br> <p><i>{message}</i></p> <br>" +
                $"<p>Vi har skapat ett chatt-rum där du kan prata direkt med en av våra kundtjänstmedarbetare angående ditt ärende <strong>{title}</strong>.</p>" +
-               $"<p>För att ansluta till chatten, <a href='http://localhost:5173/chat/{{chatId}}'> klicka på denna länken.</a></p>" +
+               $"<p>För att ansluta till chatten, <a href='http://localhost:5173/chat/{chatId}'> klicka på denna länken.</a></p>" +
                $"<br> <br> <p>Vänliga hälsningar,</p>" +
                $"<p><strong>{companyName}</strong> kundtjänst.<br>";
     }
