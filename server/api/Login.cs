@@ -16,7 +16,9 @@ public class Login
         
         app.MapPost(url, (Delegate)SetLogin);
         app.MapGet(url, (Delegate)GetLogin);
+        app.MapGet(url + "/role", (Delegate)GetRole);
         app.MapDelete(url, (Delegate)Logout);
+        
     }
     
     private async Task<IResult> SetLogin(HttpContext context, LoginRequest loginRequest)
@@ -68,6 +70,17 @@ public class Login
             role = user?.Role.ToString(), 
             company = user?.Company
         });
+    }
+    
+    private async Task<IResult> GetRole(HttpContext context)
+    {
+        var key = await Task.Run(() => context.Session.GetString("User"));
+        if (key == null)
+        {
+            return Results.NotFound(new { message = "No one is logged in." });
+        }
+        var user = JsonSerializer.Deserialize<User>(key);
+        return Results.Ok(new { role = user?.Role.ToString() });
     }
 
     private async Task<IResult> Logout(HttpContext context)
