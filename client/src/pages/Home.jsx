@@ -1,9 +1,7 @@
-import { useContext, useEffect, useState } from "react"
-import { GlobalContext } from "../GlobalContext.jsx"
+import { useEffect, useState } from "react"
 import { NavLink } from "react-router"
 
 export default function Home() {
-    const { user } = useContext(GlobalContext)
     const [companies, setCompanies] = useState([])
 
     async function getCompanies() {
