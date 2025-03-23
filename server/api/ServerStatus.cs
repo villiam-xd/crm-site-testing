@@ -2,10 +2,10 @@
 
 namespace server.api;
 
-public class Test
+public class ServerStatus
 {
     private NpgsqlDataSource Db;
-    public Test(WebApplication app, NpgsqlDataSource db, string url)
+    public ServerStatus(WebApplication app, NpgsqlDataSource db, string url)
     {
         Db = db;
         url += "/";
