@@ -34,7 +34,7 @@ app.UseSession();
 
 String url = "/api";
 
-new Test(app, db, url);
+new ServerStatus(app, db, url);
 new Login(app, db, url);
 new Users(app, db, url);
 new Issues(app, db, url);
