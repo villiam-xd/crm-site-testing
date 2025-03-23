@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Text.Json;
 using Npgsql;
+using server.Authorization;
 using server.Classes;
 using server.Enums;
 using server.Records;
@@ -15,13 +16,42 @@ public class Users
         Db = db;
         url += "/users";
         
-        app.MapPost(url + "/admin", (Delegate)CreateAdmin);
-        app.MapPost(url + "/create", (Delegate)CreateEmployee);
-        app.MapGet(url + "/bycompany/{companyName}", (Delegate)GetEmployeesByCompany);
-        app.MapPut(url + "/{userId}", (Delegate)UpdateUser);
-        app.MapDelete(url + "/{userId}", (Delegate)DeleteUser);
+        app.MapGet(url + "/bycompany", (Delegate)GetEmployeesByCompany).RoleAuthorization(Role.ADMIN);
+        app.MapPost(url + "/admin", CreateAdmin);
+        app.MapPost(url + "/create", CreateEmployee).RoleAuthorization(Role.ADMIN);
+        app.MapPut(url + "/{userId}", UpdateUser).RoleAuthorization(Role.ADMIN);
+        app.MapDelete(url + "/{userId}", DeleteUser).RoleAuthorization(Role.ADMIN);
     }
     
+    async Task<IResult> GetEmployeesByCompany(HttpContext context)
+    {
+        var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+        
+        List<Employee> employeesList = new List<Employee>();
+        await using var cmd = Db.CreateCommand("SELECT * FROM users_with_company WHERE company_name = @company_name");
+        cmd.Parameters.AddWithValue("@company_name", user.Company);
+
+        await using (var reader = await cmd.ExecuteReaderAsync())
+        {
+            if (reader.HasRows)
+            {
+                while (await reader.ReadAsync())
+                {
+                    employeesList.Add(new Employee(
+                        reader.GetInt32(reader.GetOrdinal("user_id")),
+                        reader.GetString(reader.GetOrdinal("username")),
+                        reader.IsDBNull(reader.GetOrdinal("firstname")) ? String.Empty : reader.GetString(reader.GetOrdinal("firstname")),
+                        reader.IsDBNull(reader.GetOrdinal("lastname")) ? String.Empty :reader.GetString(reader.GetOrdinal("lastname")),
+                        reader.GetString(reader.GetOrdinal("email")),
+                        Enum.Parse<Role>(reader.GetString(reader.GetOrdinal("role")))
+                    ));
+                } 
+                return Results.Ok(new { employees = employeesList });    
+            }
+        }
+        return Results.NoContent();
+    }
+
     async Task<IResult> CreateAdmin(RegisterRequest registerRequest)
     {
         await using var cmd = Db.CreateCommand("INSERT INTO companys (name) VALUES (@company) RETURNING id, name;");
@@ -65,118 +95,71 @@ public class Users
             return Results.Conflict(new { message = "Company already exists." });
         }
         
-        return Results.Problem("Something went wrong.", statusCode: 500);
-    }
-
-    async Task<IResult> GetEmployeesByCompany(string companyName)
-    {
-        List<Employee> employeesList = new List<Employee>();
-        await using var cmd = Db.CreateCommand("SELECT * FROM users_with_company WHERE company_name = @company_name");
-        cmd.Parameters.AddWithValue("@company_name", companyName);
-
-        await using (var reader = await cmd.ExecuteReaderAsync())
-        {
-            if (reader.HasRows)
-            {
-                while (await reader.ReadAsync())
-                {
-                    employeesList.Add(new Employee(
-                        reader.GetInt32(reader.GetOrdinal("user_id")),
-                        reader.GetString(reader.GetOrdinal("username")),
-                        reader.IsDBNull(reader.GetOrdinal("firstname")) ? String.Empty : reader.GetString(reader.GetOrdinal("firstname")),
-                        reader.IsDBNull(reader.GetOrdinal("lastname")) ? String.Empty :reader.GetString(reader.GetOrdinal("lastname")),
-                        reader.GetString(reader.GetOrdinal("email")),
-                        Enum.Parse<Role>(reader.GetString(reader.GetOrdinal("role")))
-                    ));
-                } 
-                return Results.Ok(new { employees = employeesList });    
-            }
-        }
-        return Results.NoContent();
+        return Results.Json(new { message = "Something went wrong." }, statusCode: 500);
     }
 
     async Task<IResult> CreateEmployee(HttpContext context, CreateEmployeeRequest createEmployeeRequest)
     {
-        
-        if (context.Session.GetString("User") == null)
-        {
-            return Results.Unauthorized();
-        }
-        
-        var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
-        if (user.Role != Role.ADMIN)
-        {
-            Results.Conflict(new { message = "You dont have access to this" });
-        }
-        
-        await using var cmd = Db.CreateCommand("SELECT * FROM companys WHERE name = @company");
-        cmd.Parameters.AddWithValue("@company", user.Company);
-        
         try
         {
-            await using (var reader = await cmd.ExecuteReaderAsync())
+            var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
+            
+            await using var cmd = Db.CreateCommand("SELECT * FROM companys WHERE name = @company");
+            cmd.Parameters.AddWithValue("@company", user.Company);
+        
+            var reader = await cmd.ExecuteScalarAsync();
+            if(reader != null)
             {
-                if (await reader.ReadAsync())
+                await using var cmd2 = Db.CreateCommand("INSERT INTO users (firstname, lastname, username, password, role, email, company) VALUES (@firstname, @lastname, @username, @password, @role::role, @email, @company_id);");
+                cmd2.Parameters.AddWithValue("@firstname", createEmployeeRequest.Firstname);
+                cmd2.Parameters.AddWithValue("@lastname", createEmployeeRequest.Lastname);
+                cmd2.Parameters.AddWithValue("@username", createEmployeeRequest.Firstname + "_" + createEmployeeRequest.Lastname);
+                cmd2.Parameters.AddWithValue("@password", createEmployeeRequest.Password);
+                cmd2.Parameters.AddWithValue("@role", Enum.Parse<Role>(createEmployeeRequest.Role).ToString());
+                cmd2.Parameters.AddWithValue("@email", createEmployeeRequest.Email);
+                cmd2.Parameters.AddWithValue("@company_id", reader);
+                
+                try
                 {
-                    await using var cmd2 = Db.CreateCommand("INSERT INTO users (firstname, lastname, username, password, role, email, company) VALUES (@firstname, @lastname, @username, @password, @role::role, @email, @company_id);");
-                    cmd2.Parameters.AddWithValue("@firstname", createEmployeeRequest.Firstname);
-                    cmd2.Parameters.AddWithValue("@lastname", createEmployeeRequest.Lastname);
-                    cmd2.Parameters.AddWithValue("@username", createEmployeeRequest.Firstname + "_" + createEmployeeRequest.Lastname);
-                    cmd2.Parameters.AddWithValue("@password", createEmployeeRequest.Password);
-                    cmd2.Parameters.AddWithValue("@role", Enum.Parse<Role>(createEmployeeRequest.Role).ToString());
-                    cmd2.Parameters.AddWithValue("@email", createEmployeeRequest.Email);
-                    cmd2.Parameters.AddWithValue("@company_id", reader.GetInt32(reader.GetOrdinal("id")));
-                    
-                    try
+                    int rowsAffected = await cmd2.ExecuteNonQueryAsync();
+                    if (rowsAffected == 1)
                     {
-                        int rowsAffected = await cmd2.ExecuteNonQueryAsync();
-                        if (rowsAffected == 1)
-                        {
-                            return Results.Ok(new { message = "User registered." });
-                        }
-                        else
-                        {
-                            return Results.Conflict(new { message = "Query executed but something went wrong." });
-                        }
+                        return Results.Ok(new { message = "User registered." });
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine(ex.Message);
-                        return Results.Conflict(new { message = "User already exists" });
+                        return Results.Conflict(new { message = "Query executed but something went wrong." });
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    return Results.Conflict(new { message = "User already exists" });
+                }
             }
+            else
+            {
+                return Results.NotFound(new { message = "Companys not found." });
+            }
+            
         }
         catch
         {
-            return Results.NotFound(new { message = "Company not found." });
+            return Results.Json(new { message = "Something went wrong." }, statusCode: 500);
         }
-        
-        return Results.Problem("Something went wrong.", statusCode: 500);
     }
 
     async Task<IResult> UpdateUser(int userId, HttpContext context, UpdateUserRequest updateUserRequest)
     {
-        if (context.Session.GetString("User") == null)
-        {
-            return Results.Unauthorized();
-        }
-        
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
-        if (user.Role != Role.ADMIN)
-        {
-            if (user.Id != userId)
-            {        
-                Results.Conflict(new { message = "You dont have access to this" });
-            }
-        }
-
-        await using var cmd = Db.CreateCommand("UPDATE users SET firstname = @firstname, lastname = @lastname, email = @email, role = @role::role WHERE id = @user_id");
+        
+        await using var cmd = Db.CreateCommand("UPDATE users SET firstname = @firstname, lastname = @lastname, email = @email, role = @role::role WHERE id = @user_id AND company = @company_id;");
         cmd.Parameters.AddWithValue("@firstname", updateUserRequest.Firstname);
         cmd.Parameters.AddWithValue("@lastname", updateUserRequest.Lastname);
         cmd.Parameters.AddWithValue("@email", updateUserRequest.Email);
         cmd.Parameters.AddWithValue("@role", Enum.Parse<Role>(updateUserRequest.Role).ToString());
         cmd.Parameters.AddWithValue("@user_id", userId);
+        cmd.Parameters.AddWithValue("@company_id", user.CompanyId);
 
         try
         {
@@ -199,19 +182,11 @@ public class Users
 
     async Task<IResult> DeleteUser(int userId, HttpContext context)
     {
-        if (context.Session.GetString("User") == null)
-        {
-            return Results.Unauthorized();
-        }
-        
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
-        if (user.Role != Role.ADMIN)
-        {
-            Results.Conflict(new { message = "You dont have access to this" });
-        }
         
-        await using var cmd = Db.CreateCommand("DELETE FROM users WHERE id = @user_id");
+        await using var cmd = Db.CreateCommand("DELETE FROM users WHERE id = @user_id AND company = @company_id;");
         cmd.Parameters.AddWithValue("@user_id", userId);
+        cmd.Parameters.AddWithValue("@company_id", user.CompanyId);
         
         try
         {
@@ -235,4 +210,5 @@ public class Users
             return Results.Conflict(new { message = "Query was not executed." });
         }
     }
+    
 }
