@@ -4,7 +4,7 @@ namespace server.Classes;
 
 public class Issue
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public String CompanyName { get; set; }
     public String CustomerEmail { get; set; }
     public String Subject { get; set; }
@@ -14,7 +14,7 @@ public class Issue
     public DateTime Created { get; set; }
     public DateTime Latest { get; set; }
 
-    public Issue(int id, String companyName, string customerEmail, string subject, IssueState state, string title, DateTime created, DateTime latest)
+    public Issue(Guid id, String companyName, string customerEmail, string subject, IssueState state, string title, DateTime created, DateTime latest)
     {
         Id = id;
         CompanyName = companyName;

@@ -39,7 +39,7 @@ public class Issues
                while (reader.Read())
                {
                    issuesList.Add(new Issue(
-                       reader.GetInt32(reader.GetOrdinal("id")),
+                       reader.GetGuid(reader.GetOrdinal("id")),
                        reader.GetString(reader.GetOrdinal("company_name")),
                        reader.GetString(reader.GetOrdinal("customer_email")),
                        reader.GetString(reader.GetOrdinal("subject")),
@@ -67,7 +67,7 @@ public class Issues
         }
     }
     
-    private async Task<IResult> GetIssue(int issueId, HttpContext context)
+    private async Task<IResult> GetIssue(Guid issueId, HttpContext context)
     {
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
         
@@ -83,7 +83,7 @@ public class Issues
                 while (await reader.ReadAsync())
                 {
                     issue = new Issue(
-                        reader.GetInt32(reader.GetOrdinal("id")),
+                        reader.GetGuid(reader.GetOrdinal("id")),
                         reader.GetString(reader.GetOrdinal("company_name")),
                         reader.GetString(reader.GetOrdinal("customer_email")),
                         reader.GetString(reader.GetOrdinal("subject")),
@@ -111,7 +111,7 @@ public class Issues
         }
     }
     
-    private async Task<IResult> UpdateIssueState(int issueId, HttpContext context, UpdateIssueStateRequest updateIssueStateRequest)
+    private async Task<IResult> UpdateIssueState(Guid issueId, HttpContext context, UpdateIssueStateRequest updateIssueStateRequest)
     {
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
         
@@ -139,7 +139,7 @@ public class Issues
         }    
     }
 
-    private async Task<IResult> GetMessages(int issueId, HttpContext context)
+    private async Task<IResult> GetMessages(Guid issueId, HttpContext context)
     {
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
 
@@ -265,7 +265,7 @@ public class Issues
         }
     }
 
-    private async Task<IResult> CreateMessage(int issueId, HttpContext context, CreateMessageRequest createMessageRequest)
+    private async Task<IResult> CreateMessage(Guid issueId, HttpContext context, CreateMessageRequest createMessageRequest)
     {
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
 
