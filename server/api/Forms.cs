@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Npgsql;
+using server.Authorization;
 using server.Classes;
 using server.Enums;
 using server.Records;
@@ -14,11 +15,11 @@ public class Forms
         Db = db;
         url += "/forms";
         
-        app.MapGet(url + "/{companyName}", (Delegate)GetCompanyForm);
-        app.MapGet(url + "/subjects", (Delegate)GetFormSubjects);
-        app.MapPost(url + "/subjects", (Delegate)CreateSubject);
-        app.MapPut(url + "/subjects", (Delegate)UpdateSubject);
-        app.MapDelete(url + "/subjects/{subjectName}", (Delegate)DeleteSubject);
+        app.MapGet(url + "/{companyName}", GetCompanyForm);
+        app.MapGet(url + "/subjects", (Delegate)GetFormSubjects).RoleAuthorization(Role.USER, Role.ADMIN);
+        app.MapPost(url + "/subjects", CreateSubject).RoleAuthorization(Role.ADMIN);
+        app.MapPut(url + "/subjects", UpdateSubject).RoleAuthorization(Role.ADMIN);
+        app.MapDelete(url + "/subjects/{subjectName}", DeleteSubject).RoleAuthorization(Role.ADMIN);
     }
     
     private async Task<IResult> GetCompanyForm(string companyName)
@@ -54,20 +55,15 @@ public class Forms
                 return Results.NotFound(new { message = "No company was found." });
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e.Message);
-            return Results.Problem("Something went wrong.", statusCode: 500);
+            Console.WriteLine(ex.Message);
+            return Results.Json(new { message = "Something went wrong." }, statusCode: 500);
         }
     }
 
     private async Task<IResult> GetFormSubjects(HttpContext context)
     {
-        if (context.Session.GetString("User") == null)
-        {
-            return Results.Unauthorized();
-        }
-        
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
         
         await using var cmd = Db.CreateCommand("SELECT * FROM subjects WHERE company_id = @company_id ORDER BY id");
@@ -93,29 +89,22 @@ public class Forms
                 }
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e.Message);
-            return Results.Problem("Something went wrong.", statusCode: 500);
+            Console.WriteLine(ex.Message);
+            return Results.Json(new { message = "Something went wrong." }, statusCode: 500);
         }
     }
 
     private async Task<IResult> CreateSubject(HttpContext context, CreateSubjectRequest createSubjectRequest)
     {
-        if (context.Session.GetString("User") == null)
-        {
-            return Results.Unauthorized();
-        }
-        
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
-        if (user.Role != Role.ADMIN)
-        {
-            Results.Conflict(new { message = "You dont have access to this" });
-        }
         
         await using var cmd = Db.CreateCommand("INSERT INTO subjects (company_id, name) VALUES (@company_id, @name)");
         cmd.Parameters.AddWithValue("@company_id", user.CompanyId);
         cmd.Parameters.AddWithValue("@name", createSubjectRequest.Name);
+        
+        
         try
         {
             var reader = await cmd.ExecuteNonQueryAsync();
@@ -128,25 +117,16 @@ public class Forms
                 return Results.Conflict(new { message = $"Query was executed, but {reader} rows was effected." });
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e.Message);
-            return Results.Problem("Something went wrong.", statusCode: 500);
+            Console.WriteLine(ex.Message);
+            return Results.Json(new { message = "Something went wrong." }, statusCode: 500);
         }
     }
     
     private async Task<IResult> UpdateSubject(HttpContext context, UpdateSubjectRequest updateSubjectRequest)
     {
-        if (context.Session.GetString("User") == null)
-        {
-            return Results.Unauthorized();
-        }
-        
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
-        if (user.Role != Role.ADMIN)
-        {
-            Results.Conflict(new { message = "You dont have access to this" });
-        }
         
         await using var cmd = Db.CreateCommand("UPDATE subjects SET name = @new_name WHERE company_id = @company_id AND name = @old_name");
         cmd.Parameters.AddWithValue("@new_name", updateSubjectRequest.NewName);
@@ -165,25 +145,16 @@ public class Forms
                 return Results.Conflict(new { message = $"Query was executed, but {reader} rows was effected." });
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e.Message);
-            return Results.Problem("Something went wrong.", statusCode: 500);
+            Console.WriteLine(ex.Message);
+            return Results.Json(new { message = "Something went wrong." }, statusCode: 500);
         }
     }
     
     private async Task<IResult> DeleteSubject(string subjectName, HttpContext context)
     {
-        if (context.Session.GetString("User") == null)
-        {
-            return Results.Unauthorized();
-        }
-        
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
-        if (user.Role != Role.ADMIN)
-        {
-            Results.Conflict(new { message = "You dont have access to this" });
-        }
         
         await using var cmd = Db.CreateCommand("DELETE FROM subjects WHERE company_id = @company_id AND name = @name");
         cmd.Parameters.AddWithValue("@company_id", user.CompanyId);
@@ -201,10 +172,11 @@ public class Forms
                 return Results.Conflict(new { message = $"Query was executed, but {reader} rows was effected." });
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e.Message);
-            return Results.Problem("Something went wrong.", statusCode: 500);
+            Console.WriteLine(ex.Message);
+            return Results.Json(new { message = "Something went wrong." }, statusCode: 500);
         }
     }
+    
 }
