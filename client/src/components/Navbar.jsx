@@ -21,7 +21,6 @@ export default function Navbar() {
 
     return <nav>
         <NavLink to={"/"}>Home</NavLink>
-        <NavLink to={"/chat/1"}>Customer Chat</NavLink>
         {
             user == null ?
                 <>

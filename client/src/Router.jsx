@@ -13,6 +13,7 @@ import EmployeeChat from "./pages/employee/EmployeeChat.jsx";
 import EmployeeCheck from "./pages/protection/EmployeeCheck.jsx";
 import NoPage from "./pages/NoPage.jsx";
 import AdminCheck from "./pages/protection/AdminCheck.jsx";
+import CustomerCheck from "./pages/protection/CustomerCheck.jsx";
 
 export default function Router() {
   return <>
@@ -23,7 +24,6 @@ export default function Router() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/:company_name/issueform" element={<IssueForm />} />
-          <Route path="/chat/:issue_id" element={<CustomerChat />} />
           <Route path="/employee" element={<EmployeeCheck />}>
             <Route path="issues" element={<IssueView />} />
             <Route path="chat/:issue_id" element={<EmployeeChat />} />
@@ -34,6 +34,9 @@ export default function Router() {
             <Route path="form/edit" element={<EditForm />} />
           </Route>
           <Route path="*" element={<NoPage />} />
+        </Route>
+        <Route path="/chat" element={<CustomerCheck />}>
+          <Route path=":issue_id" element={<CustomerChat />} />
         </Route>
       </Routes>
     </BrowserRouter>

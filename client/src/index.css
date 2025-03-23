@@ -384,3 +384,13 @@ button:focus-visible {
   }
 }
 
+#customerChat {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  
+  #loginCustomerForm {
+    width: 300px;
+    padding: 20px;
+  }
+}
