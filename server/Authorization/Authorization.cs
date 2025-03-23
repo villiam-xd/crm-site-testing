@@ -19,9 +19,9 @@ public static class Authorization
             }
 
             var user = JsonSerializer.Deserialize<User>(userJson);
-            if (user == null || !roles.Contains(user.Role))
+            if (!roles.Contains(user.Role))
             {
-                return Results.Forbid();
+                return Results.Json(new { message = "Access denied." }, statusCode: 403);
             }
 
             return await next(context);
