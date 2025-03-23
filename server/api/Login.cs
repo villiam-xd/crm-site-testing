@@ -78,7 +78,7 @@ public class Login
                 
                 while (await reader.ReadAsync())
                 {
-                    await using var cmd2 = Db.CreateCommand("SELECT name FROM companys WHERE id = @company_id");
+                    await using var cmd2 = Db.CreateCommand("SELECT name FROM companies WHERE id = @company_id");
                     cmd2.Parameters.AddWithValue("@company_id", reader.GetInt32(reader.GetOrdinal("company_id")));
                     
                     var companyName = await cmd2.ExecuteScalarAsync();

@@ -28,7 +28,7 @@ public class Issues
     {
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
 
-        await using var cmd = Db.CreateCommand("SELECT * FROM companys_issues WHERE company_name = @company");
+        await using var cmd = Db.CreateCommand("SELECT * FROM companies_issues WHERE company_name = @company");
         cmd.Parameters.AddWithValue("@company", user.Company);
 
         try
@@ -71,7 +71,7 @@ public class Issues
     {
         var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
         
-        await using var cmd = Db.CreateCommand("SELECT * FROM companys_issues WHERE id = @issue_id AND company_name = @company_name");
+        await using var cmd = Db.CreateCommand("SELECT * FROM companies_issues WHERE id = @issue_id AND company_name = @company_name");
         cmd.Parameters.AddWithValue("@issue_id", issueId);
         cmd.Parameters.AddWithValue("@company_name", user.Company);
 
@@ -199,7 +199,7 @@ public class Issues
     
     private async Task<IResult> CreateIssue(string companyName, CreateIssueRequest createIssueRequest, IEmailService email)
     {
-        await using var cmd = Db.CreateCommand("SELECT * FROM companys WHERE name = @company_name");
+        await using var cmd = Db.CreateCommand("SELECT * FROM companies WHERE name = @company_name");
         cmd.Parameters.AddWithValue("@company_name", companyName);
 
         try

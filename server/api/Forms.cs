@@ -24,7 +24,7 @@ public class Forms
     
     private async Task<IResult> GetCompanyForm(string companyName)
     {
-        await using var cmd = Db.CreateCommand("SELECT * FROM companys WHERE name = @company_name");
+        await using var cmd = Db.CreateCommand("SELECT * FROM companies WHERE name = @company_name");
         cmd.Parameters.AddWithValue("@company_name", companyName);
     
         try

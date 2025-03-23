@@ -54,7 +54,7 @@ public class Users
 
     async Task<IResult> CreateAdmin(RegisterRequest registerRequest)
     {
-        await using var cmd = Db.CreateCommand("INSERT INTO companys (name) VALUES (@company) RETURNING id, name;");
+        await using var cmd = Db.CreateCommand("INSERT INTO companies (name) VALUES (@company) RETURNING id, name;");
         cmd.Parameters.AddWithValue("@company", registerRequest.Company);
         
         try
@@ -81,7 +81,7 @@ public class Users
                     }
                     catch
                     {
-                        await using var cmd3 = Db.CreateCommand("DELETE FROM companys WHERE name = @company;");
+                        await using var cmd3 = Db.CreateCommand("DELETE FROM companies WHERE name = @company;");
                         cmd3.Parameters.AddWithValue("@company", registerRequest.Company);
                         await cmd3.ExecuteNonQueryAsync();
                         
@@ -104,7 +104,7 @@ public class Users
         {
             var user = JsonSerializer.Deserialize<User>(context.Session.GetString("User"));
             
-            await using var cmd = Db.CreateCommand("SELECT * FROM companys WHERE name = @company");
+            await using var cmd = Db.CreateCommand("SELECT * FROM companies WHERE name = @company");
             cmd.Parameters.AddWithValue("@company", user.Company);
         
             var reader = await cmd.ExecuteScalarAsync();
@@ -139,7 +139,7 @@ public class Users
             }
             else
             {
-                return Results.NotFound(new { message = "Companys not found." });
+                return Results.NotFound(new { message = "Companies not found." });
             }
             
         }

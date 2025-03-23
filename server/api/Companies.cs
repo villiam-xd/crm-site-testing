@@ -16,7 +16,7 @@ public class Companies
 
     private async Task<IResult> GetCompanies(HttpRequest req, HttpResponse res)
     {
-        await using var cmd = Db.CreateCommand("SELECT name FROM companys");
+        await using var cmd = Db.CreateCommand("SELECT name FROM companies");
 
         try
         {
