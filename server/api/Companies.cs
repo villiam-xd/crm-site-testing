@@ -11,7 +11,7 @@ public class Companies
         Db = db;
         url += "/companies";
 
-        app.MapGet(url, (Delegate)GetCompanies);
+        app.MapGet(url, GetCompanies);
     }
 
     private async Task<IResult> GetCompanies(HttpRequest req, HttpResponse res)
@@ -38,10 +38,10 @@ public class Companies
                 }
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e.Message);
-            return Results.Problem("Something went wrong.", statusCode: 500);
+            Console.WriteLine(ex.Message);
+            return Results.Json(new { message = "Something went wrong." }, statusCode: 500);
         }
     }
     
