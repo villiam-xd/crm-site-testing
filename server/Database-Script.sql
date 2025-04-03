@@ -156,8 +156,8 @@ INSERT INTO subjects (company_id, name) VALUES (1, 'Reklamation');
 INSERT INTO subjects (company_id, name) VALUES (1, 'Skada');
 INSERT INTO subjects (company_id, name) VALUES (1, 'Övrigt');
 
-INSERT INTO issues (id, company_id, customer_email, subject, state, title, created) VALUES ('95174724-b419-457e-b2d9-1cfdb0e382f3', 1, 'Linus@email.test', 'Test', 'NEW', 'Test Issue', '2025-03-17 16:32:07.000000');
-INSERT INTO issues (id, company_id, customer_email, subject, state, title, created) VALUES ('9e5caf19-b637-4f78-9145-a8ac8f5e49f5', 1, 'linus.lindroth.92@gmail.com', 'Övrigt', 'NEW', 'Test Issue 2', '2025-03-17 10:05:37.000000');
+INSERT INTO issues (id, company_id, customer_email, subject, state, title, created) VALUES ('95174724-b419-457e-b2d9-1cfdb0e382f3', 1, 'linus@nodehill.com', 'Test', 'NEW', 'Test Issue', '2025-03-17 16:32:07.000000');
+INSERT INTO issues (id, company_id, customer_email, subject, state, title, created) VALUES ('9e5caf19-b637-4f78-9145-a8ac8f5e49f5', 1, 'linus@nodehill.com', 'Övrigt', 'NEW', 'Test Issue 2', '2025-03-17 10:05:37.000000');
 
 INSERT INTO messages (issue_id, message, sender, username, time) VALUES ('95174724-b419-457e-b2d9-1cfdb0e382f3', 'Some message.', 'CUSTOMER', 'Linus@email.test', '2025-03-17 10:05:37.000000');
 INSERT INTO messages (issue_id, message, sender, username, time) VALUES ('9e5caf19-b637-4f78-9145-a8ac8f5e49f5', 'This is just a test.', 'CUSTOMER', 'linus.lindroth.92@gmail.com', '2025-03-17 16:32:07.000000');
