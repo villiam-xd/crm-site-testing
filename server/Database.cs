@@ -8,9 +8,9 @@ public class Database
 {
 
     private readonly string _host = "localhost";
-    private readonly string _port = "5544";
+    private readonly string _port = "5432";
     private readonly string _username = "postgres";
-    private readonly string _password = "password";
+    private readonly string _password = "Gordon167304";
     private readonly string _database = "crm-site";
 
     private NpgsqlDataSource _connection;

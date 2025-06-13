@@ -34,3 +34,8 @@ Example
   }
 ```
 
+### Länkar
+
+Förstudie https://docs.google.com/document/d/1VMArX5KI6a-z1AuOOumi5gN9-ptjrfO-y3sfUKPg0Wg/edit?usp=sharing
+Slutrapport https://docs.google.com/document/d/1Mli0sbtRZLALDUMxChG3nnZsepkspwp-fbfG0HRROgY/edit?usp=sharing
+Testfall https://docs.google.com/spreadsheets/d/1P5Lsis3rxHuf2aRam-bCpcqgIjDWk0NE8MjogTpSx48/edit?usp=sharing

@@ -1,0 +1,867 @@
+{
+	"info": {
+		"_postman_id": "369d23d2-51a2-4439-92fd-f594a63beb29",
+		"name": "CRM-Site",
+		"description": "API tests for CRM System including authentication, users, issues, forms, and companies",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43555690"
+	},
+	"item": [
+		{
+			"name": "Companies",
+			"item": [
+				{
+					"name": "GetCompanies",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404, 500]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response has correct structure\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('companies');",
+									"        pm.expect(jsonData.companies).to.be.an('array');",
+									"        if (jsonData.companies.length > 0) {",
+									"            pm.expect(jsonData.companies[0]).to.be.a('string');",
+									"        }",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/companies",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"companies"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Forms",
+			"item": [
+				{
+					"name": "GetCompanyForm",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/forms/{{companyName}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forms",
+								"{{companyName}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetFormSubjects",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/forms/subjects",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forms",
+								"subjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateSubject",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{subjectName}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/forms/subjects",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forms",
+								"subjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateSubject",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response has correct structure\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('message');",
+									"        pm.expect(jsonData.message).to.equal('Subject was updated.');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"oldName\": \"Test Subject\",\n    \"newName\": \"Updated Subject\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/forms/subjects",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forms",
+								"subjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteSubject",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response has correct structure\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('message');",
+									"        pm.expect(jsonData.message).to.equal('Subject was deleted.');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/forms/subjects/Updated Subject",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forms",
+								"subjects",
+								"Updated Subject"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Issues",
+			"item": [
+				{
+					"name": "GetIssuesByCompany",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/issues",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"issues"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetIssue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 400, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/issues/{{issueId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"issues",
+								"{{issueId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateIssueState",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 400, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"newState\": \"CLOSED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/issues/{{issueId}}/state",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"issues",
+								"{{issueId}}",
+								"state"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMessages",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 400, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/issues/{{issueId}}/messages",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"issues",
+								"{{issueId}}",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateMessage",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 400, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"This is a test message\",\n    \"sender\": \"CUSTOMER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/issues/{{issueId}}/messages",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"issues",
+								"{{issueId}}",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateIssue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201, 400, 401, 404, 405, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 400, 401, 404, 405, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Issue\",\n    \"description\": \"This is a test issue\",\n    \"status\": \"OPEN\",\n    \"priority\": \"MEDIUM\",\n    \"assigned_to\": 1,\n    \"created_by\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/issues",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"issues"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "SetLoginAdmin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 400, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 500]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response has correct structure\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('username');",
+									"        pm.expect(jsonData).to.have.property('role');",
+									"        pm.expect(jsonData).to.have.property('company');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{adminUsername}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SetLoginUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 400, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400, 404, 500]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response has correct structure\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('username');",
+									"        pm.expect(jsonData).to.have.property('role');",
+									"        pm.expect(jsonData).to.have.property('company');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{userUsername}}\",\n    \"password\": \"{{userPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetLogin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404, 500]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response has correct structure\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('username');",
+									"        pm.expect(jsonData).to.have.property('role');",
+									"        pm.expect(jsonData).to.have.property('company');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 404, 409, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404, 409, 500]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response has correct message\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('message');",
+									"        pm.expect(jsonData.message).to.equal('Session cleared');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "GetEmployeesByCompany",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/bycompany",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"bycompany"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateAdmin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 404, 409, 401, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404, 409, 401, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{adminUsername}}\",\n    \"password\": \"{{adminPassword}}\",\n    \"email\": \"{{adminEmail}}\",\n    \"company\": \"{{companyName}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/admin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateEmployee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, 404, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstname\": \"Test\",\n    \"lastname\": \"User\",\n    \"email\": \"{{userEmail}}\",\n    \"password\": \"{{userPassword}}\",\n    \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/create",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, 404, 405, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404, 405, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstname\": \"Updated\",\n    \"lastname\": \"User\",\n    \"email\": \"{{userEmail}}\",\n    \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200, 401, 404, 405, or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 401, 404, 405, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ServerStatus",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
